@@ -9,6 +9,10 @@ const SWEEP_HOVER_RATE = 0.35;
 const HAVE_CURRENT_DATA = 2;
 const FRAME_EVENTS = ["loadeddata", "seeked", "canplay", "error"] as const;
 const FRAME_WAIT_MS = 4000;
+// Longest the outgoing slide stays under an incoming video that has not shown its first frame yet.
+const PRESENT_WAIT_MS = 1000;
+const ACTIVE = "data-ts2026-marquee-active";
+const ENTERING = "data-ts2026-marquee-entering";
 
 const PHONE_QUERY = "(max-width: 767px)";
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
@@ -188,7 +192,8 @@ function cloneMedia(slide: Ts2026MarqueeSlide): HTMLImageElement | HTMLVideoElem
     clone.setAttribute("muted", "");
     clone.setAttribute("playsinline", "");
     if (!clone.hasAttribute("loop")) clone.loop = true;
-    if (!clone.hasAttribute("preload")) clone.preload = "metadata";
+    // Buffer every slide up front, so a picked prompt cuts straight to a decoded first frame.
+    clone.preload = "auto";
   } else {
     clone.loading = "eager";
     clone.decoding = "async";
@@ -216,6 +221,34 @@ function primeVideo(video: HTMLVideoElement) {
   stopVideo(video);
   if (video.preload === "none") video.preload = "auto";
   if (video.readyState === 0) video.load();
+}
+
+// Calls `done` once `media` has reached the screen: a playing video's first presented frame, otherwise two
+// painted frames. Returns a function that skips the wait and calls `done` right away.
+function whenPresented(media: HTMLImageElement | HTMLVideoElement | undefined, done: () => void): () => void {
+  let settled = false;
+  let raf = 0;
+  let handle = 0;
+  const settle = () => {
+    if (settled) return;
+    settled = true;
+    cancelAnimationFrame(raf);
+    window.clearTimeout(timer);
+    if (handle && media instanceof HTMLVideoElement) media.cancelVideoFrameCallback(handle);
+    done();
+  };
+  const timer = window.setTimeout(settle, PRESENT_WAIT_MS);
+  if (media instanceof HTMLVideoElement && !media.paused && typeof media.requestVideoFrameCallback === "function") {
+    handle = media.requestVideoFrameCallback(() => {
+      handle = 0;
+      raf = requestAnimationFrame(settle);
+    });
+  } else {
+    raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(settle);
+    });
+  }
+  return settle;
 }
 
 function loadExplored(key: string): Set<number> {
@@ -711,17 +744,39 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     sync();
   };
 
+  const slideMedia: [number, HTMLImageElement | HTMLVideoElement][] = [
+    ...(heroMedia ? [[0, heroMedia] as [number, HTMLImageElement | HTMLVideoElement]] : []),
+    ...clones,
+  ];
+  let finishSwap: (() => void) | null = null;
+
+  // A hard cut, no fade: the incoming slide goes on top at once and the outgoing one stays visible under it
+  // until the incoming has a frame on screen, so the window never shows an empty or half-faded box.
   const reveal = (index: number) => {
-    if (heroMedia) heroMedia.toggleAttribute("data-ts2026-marquee-active", index === 0);
-    for (const [slideIndex, clone] of clones) {
-      const isActive = slideIndex === index;
-      clone.toggleAttribute("data-ts2026-marquee-active", isActive);
-      if (clone instanceof HTMLVideoElement && !playHeld) {
-        if (isActive) playVideo(clone);
-        else stopVideo(clone);
-      }
+    finishSwap?.();
+    let incoming: HTMLImageElement | HTMLVideoElement | undefined;
+    const leaving: (HTMLImageElement | HTMLVideoElement)[] = [];
+    for (const [slideIndex, media] of slideMedia) {
+      if (slideIndex === index) incoming = media;
+      else if (media.hasAttribute(ACTIVE)) leaving.push(media);
     }
+    incoming?.setAttribute(ACTIVE, "");
     root.dataset.ts2026MarqueeActive = String(index);
+
+    const finish = () => {
+      finishSwap = null;
+      incoming?.removeAttribute(ENTERING);
+      for (const media of leaving) {
+        media.removeAttribute(ACTIVE);
+        if (media instanceof HTMLVideoElement) stopVideo(media);
+      }
+    };
+    if (!incoming || leaving.length === 0) {
+      finish();
+      return;
+    }
+    incoming.setAttribute(ENTERING, "");
+    finishSwap = whenPresented(incoming, finish);
   };
 
   const show = (index: number) => {
@@ -731,9 +786,6 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
 
   const release = () => {
     playHeld = false;
-    for (const [slideIndex, clone] of clones) {
-      if (slideIndex !== active && clone instanceof HTMLVideoElement) stopVideo(clone);
-    }
     watchMedia(clones.get(active));
     sync();
   };
@@ -745,15 +797,12 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     explored.add(index);
     saveExplored(options.storageKey, explored);
     renderExplored();
-    const same = index === active;
     playHeld = true;
     select(index);
-    const incoming = clones.get(index);
     foldThenDock(() =>
-      whenFrameReady(incoming, () => {
+      whenFrameReady(clones.get(index), () => {
+        release();
         reveal(index);
-        if (same || !incoming || reducedMotion()) release();
-        else afterTransition(incoming, "opacity", 1000, release);
       }),
     );
   };
@@ -820,13 +869,14 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     disarmCue();
     hideOpenHint();
     unwatchMedia?.();
+    finishSwap?.();
     for (const clone of clones.values()) {
       if (clone instanceof HTMLVideoElement) clone.pause();
       clone.remove();
     }
     card.remove();
     heroMedia?.removeAttribute("data-ts2026-marquee-slide");
-    heroMedia?.removeAttribute("data-ts2026-marquee-active");
+    heroMedia?.removeAttribute(ACTIVE);
     stage.style.removeProperty("--ts2026-marquee-aspect");
     delete root.dataset.ts2026MarqueeReady;
     delete root.dataset.ts2026MarqueeActive;

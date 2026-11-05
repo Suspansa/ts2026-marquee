@@ -346,22 +346,23 @@
   background: #000;
 }
 
+/* Slides swap with a hard cut, no fade: a crossfade leaves both slides half-transparent mid-way and the page
+   shows through as a flash. */
 #ts2026-marquee[data-ts2026-marquee-ready] .image__wrapper > :is(.image__asset, .ts2026-marquee-prompts__media):not([data-ts2026-marquee-active]) {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transition: opacity var(--marquee-media-fade-out) ease, visibility 0s linear var(--marquee-media-fade-out);
+}
+
+/* The slide being cut to sits over the outgoing one, which stays visible underneath until the new frame is on screen.
+   It drops its black backdrop meanwhile, so a frame that lands a beat late shows the old slide rather than black. */
+#ts2026-marquee .marquee--center-image .image__wrapper > [data-ts2026-marquee-entering] {
+  z-index: 1;
+  background: none;
 }
 
 #ts2026-marquee .image__wrapper > video.ts2026-marquee-prompts__media {
   object-position: center;
-}
-
-#ts2026-marquee .marquee--center-image .image__wrapper > .image__asset,
-#ts2026-marquee .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media {
-  --marquee-media-fade-out: 0.35s;
-  --marquee-media-fade-in: 0.5s;
-  transition: opacity var(--marquee-media-fade-in) ease, visibility 0s;
 }
 
 #ts2026-marquee .marquee--center-image .image__wrapper::after {
@@ -1328,8 +1329,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #ts2026-marquee .marquee--center-image .image__wrapper > .image__asset,
-  #ts2026-marquee .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media,
   #ts2026-marquee .marquee--center-image .image__wrapper::after,
   #ts2026-marquee .ts2026-marquee-prompts__box,
   #ts2026-marquee .ts2026-marquee-prompts__box::before,
