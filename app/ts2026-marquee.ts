@@ -30,6 +30,7 @@ export type Ts2026MarqueeOptions = {
   pulseIntroDelay?: number;
   hintDelay?: number;
   imageDuration?: number;
+  footnote?: string;
 };
 
 export type Ts2026MarqueeSlide = {
@@ -58,6 +59,7 @@ const DEFAULTS: Required<Ts2026MarqueeOptions> = {
   pulseIntroDelay: 1000,
   hintDelay: 1000,
   imageDuration: 6000,
+  footnote: "* Some features are only available with Tableau Cloud.",
 };
 
 const STAR_SVG = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><g class="ts2026-marquee-spark ts2026-marquee-spark--main"><path d="M19.2187 16.1317L16.4604 17.5042C15.6317 17.9172 14.9614 18.5853 14.5471 19.4112L13.17 22.1604C12.975 22.5531 12.4103 22.5531 12.2153 22.1604L10.8382 19.4112C10.4239 18.5853 9.7536 17.9172 8.9249 17.5042L6.16662 16.1317C5.77258 15.9373 5.77258 15.3745 6.16662 15.1802L8.9249 13.8076C9.7536 13.3947 10.4239 12.7266 10.8382 11.9007L12.2153 9.1515C12.4103 8.75877 12.975 8.75877 13.17 9.1515L14.5471 11.9007C14.9614 12.7266 15.6317 13.3947 16.4604 13.8076L19.2187 15.1802C19.6127 15.3745 19.6127 15.9373 19.2187 16.1317Z" fill="url(#ts2026-marquee-spark-gradient)"/></g><g class="ts2026-marquee-spark ts2026-marquee-spark--echo ts2026-marquee-spark--top"><path d="M25.2349 8.6454L24.0528 8.05427C23.6953 7.88017 23.4109 7.58866 23.2322 7.23641L22.6391 6.0582C22.5579 5.88815 22.3141 5.88815 22.2288 6.0582L21.6357 7.23641C21.461 7.59271 21.1686 7.87612 20.8151 8.05427L19.633 8.6454C19.4624 8.72638 19.4624 8.96931 19.633 9.05433L20.8151 9.64546C21.1726 9.81956 21.457 10.1111 21.6357 10.4633L22.2288 11.6415C22.3101 11.8116 22.5538 11.8116 22.6391 11.6415L23.2322 10.4633C23.4069 10.107 23.6994 9.82361 24.0528 9.64546L25.2349 9.05433C25.4055 8.97335 25.4055 8.73042 25.2349 8.6454Z" fill="url(#ts2026-marquee-spark-gradient)"/></g><g class="ts2026-marquee-spark ts2026-marquee-spark--echo ts2026-marquee-spark--low"><path d="M25.2349 22.2454L24.0528 21.6543C23.6953 21.4802 23.4109 21.1887 23.2322 20.8364L22.6391 19.6582C22.5579 19.4881 22.3141 19.4881 22.2288 19.6582L21.6357 20.8364C21.461 21.1927 21.1686 21.4761 20.8151 21.6543L19.633 22.2454C19.4624 22.3264 19.4624 22.5693 19.633 22.6543L20.8151 23.2455C21.1726 23.4196 21.457 23.7111 21.6357 24.0633L22.2288 25.2415C22.3101 25.4116 22.5538 25.4116 22.6391 25.2415L23.2322 24.0633C23.4069 23.707 23.6994 23.4236 24.0528 23.2455L25.2349 22.6543C25.4055 22.5733 25.4055 22.3304 25.2349 22.2454Z" fill="url(#ts2026-marquee-spark-gradient)"/></g><defs><radialGradient id="ts2026-marquee-spark-gradient" cx="0" cy="0" r="1" gradientTransform="matrix(0.0471117 26.8433 -48.5825 0.0875902 15.6053 2.09453)" gradientUnits="userSpaceOnUse"><stop stop-color="#90D0FE"/><stop offset="0.413548" stop-color="#00B3FF"/><stop offset="1" stop-color="#022AC0"/></radialGradient></defs></svg>`;
@@ -383,6 +385,12 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   if (options.expanded) setExpanded(true);
   stage.append(card);
 
+  const footnote = options.footnote ? el("p", "ts2026-marquee-footnote") : null;
+  if (footnote) {
+    footnote.textContent = options.footnote;
+    root.append(footnote);
+  }
+
   const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   let cancelSettle: (() => void) | null = null;
   const afterTransition = (target: HTMLElement, property: string, timeout: number, done: () => void) => {
@@ -607,6 +615,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
       clone.remove();
     }
     card.remove();
+    footnote?.remove();
     heroMedia?.removeAttribute("data-ts2026-marquee-slide");
     heroMedia?.removeAttribute("data-ts2026-marquee-active");
     stage.style.removeProperty("--ts2026-marquee-aspect");

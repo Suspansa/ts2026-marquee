@@ -1,10 +1,10 @@
 @import "./marquee-bg.css";
 
 #ts2026-marquee {
-  --marquee-plate: #d0e5fe;
+  /* The area above the bottom oval: the background is masked to it, so the oval itself stays transparent */
+  --marquee-curve-cut: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 77.17' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V77.17C1208 26.63 967.1 0 720 0C472.9 0 232 26.63 0 77.17Z'/%3E%3C/svg%3E");
+  --marquee-curve-h: 5.36vw; /* 77.17 / 1440 of the width */
   --marquee-bg: var(--marquee-bg-desktop);
-  --marquee-curve: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 77.17' preserveAspectRatio='none'%3E%3Cpath d='M0 77.17C232 26.63 472.9 0 720 0C967.1 0 1208 26.63 1440 77.17Z'/%3E%3C/svg%3E");
-  --marquee-curve-ratio: 1440 / 77.17;
   --marquee-window-overlap: 48px;
   --marquee-window-width: 1132px;
   --marquee-frame-pad: 13px;
@@ -13,7 +13,6 @@
   --marquee-hero-pad-top: 72px;
   position: relative;
   overflow-x: clip;
-  background-color: var(--marquee-plate);
 }
 
 @media (max-width: 1023px) {
@@ -49,23 +48,29 @@
   --pbc-g-text-body-color: #fff;
   --pbc-focus-state-color: #fff;
   position: relative;
-  background: var(--marquee-bg) center top / cover no-repeat;
+  isolation: isolate;
 }
 
-#ts2026-marquee .marquee--blade::after {
+/* The background, with the oval at the bottom cut out (transparent), so whatever sits under the marquee shows
+   through it. The window frame still overlaps the cut, as in the design. */
+#ts2026-marquee .marquee--blade::before {
   content: "";
   position: absolute;
-  inset: auto 0 0;
-  aspect-ratio: var(--marquee-curve-ratio);
-  background: var(--marquee-plate);
-  -webkit-mask: var(--marquee-curve) center / 100% 100% no-repeat;
-  mask: var(--marquee-curve) center / 100% 100% no-repeat;
+  inset: 0;
+  z-index: -1;
+  background: var(--marquee-bg) center top / cover no-repeat;
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--marquee-curve-h) + 1px) no-repeat,
+    var(--marquee-curve-cut) bottom / 100% var(--marquee-curve-h) no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--marquee-curve-h) + 1px) no-repeat,
+    var(--marquee-curve-cut) bottom / 100% var(--marquee-curve-h) no-repeat;
   pointer-events: none;
 }
 
 #ts2026-marquee .marquee--blade > .container {
   padding-top: var(--marquee-hero-pad-top);
-  padding-bottom: max(0px, calc(5.36vw - var(--marquee-window-overlap)));
+  padding-bottom: max(0px, calc(var(--marquee-curve-h) - var(--marquee-window-overlap)));
 }
 
 #ts2026-marquee .marquee--blade .grid_main {
@@ -928,8 +933,8 @@
   width: 100%;
   min-height: 44px;
   margin: 0;
-  padding: 8px 10px;
-  border: 1px solid #00b3ff1a;
+  padding: 7px 9px;
+  border: 2px solid #00b3ff1a;
   border-radius: 8px;
   background: #fff;
   color: var(--marquee-card-text);
@@ -946,9 +951,9 @@
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__prompt::before {
-  inset: -1px;
+  inset: -2px;
   z-index: -1;
-  padding: 1px;
+  padding: 2px;
   transition: opacity 0.25s ease;
   /* The lap waits until the panel is open, see the [data-state="expanded"] rule below */
   animation-play-state: paused;
@@ -1264,7 +1269,7 @@
   }
   #ts2026-marquee .ts2026-marquee-prompts__prompt {
     min-height: 38px;
-    padding: 6px 10px;
+    padding: 5px 9px;
     font-size: 13px;
   }
   #ts2026-marquee .ts2026-marquee-prompts__hint {
@@ -1326,5 +1331,23 @@
   #ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:first-of-type {
     opacity: 0.35;
     transform: scale(1.5);
+  }
+}
+
+/* Footnote under the oval, added by ts2026-marquee.ts */
+#ts2026-marquee .ts2026-marquee-footnote {
+  margin: 8px 0 94px;
+  padding-inline: 16px;
+  font-family: var(--marquee-card-font);
+  font-size: 12px;
+  line-height: 18px;
+  color: #444;
+  text-align: center;
+}
+
+@media (max-width: 767px) {
+  #ts2026-marquee .ts2026-marquee-footnote {
+    margin-top: 24px;
+    margin-bottom: 48px;
   }
 }
