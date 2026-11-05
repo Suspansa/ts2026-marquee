@@ -480,8 +480,8 @@
 
 #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box {
   border-radius: var(--marquee-card-radius);
-  /* The open panel has no border at all: no card outline, only the soft shadow */
-  box-shadow: 0 8px 24px rgb(0 30 91 / 0.08), 0 2px 6px rgb(0 30 91 / 0.04);
+  /* The open panel keeps the same 1px light-grey card outline as the teaser card, plus the soft shadow */
+  box-shadow: var(--marquee-card-shadow);
 }
 
 #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box::before {
@@ -1239,7 +1239,7 @@
     translate: 0 calc(-1 * var(--prompts-lift, 0px));
   }
   #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box {
-    box-shadow: 0 6px 16px rgb(0 30 91 / 0.06);
+    box-shadow: 0 0 0 1px var(--marquee-card-line), 0 6px 16px rgb(0 30 91 / 0.06);
   }
   #ts2026-marquee .ts2026-marquee-prompts__placeholder {
     font-size: 12px;
