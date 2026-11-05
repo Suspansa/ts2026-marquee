@@ -13,6 +13,72 @@ const FRAME_WAIT_MS = 4000;
 const PHONE_QUERY = "(max-width: 767px)";
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
 const TABLET_QUERY = "(min-width: 768px) and (max-width: 1023px)";
+const MOUSE_QUERY = "(hover: hover) and (pointer: fine)";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+const BLOBS = "ts2026-marquee-blobs";
+// Farthest a depth-1 pill travels, as a share of its set's width (≈23px on the 1440 design).
+const BLOB_REACH = 0.016;
+// How long the pills take to catch up with the cursor; larger is lazier.
+const BLOB_LAG_MS = 280;
+
+// [x, y, width, height, opacity, blur, depth] in each set's own units, lifted from the Figma backgrounds.
+// Every pill is fully rounded, so its height is also its corner diameter; depth scales how far it drifts.
+type Blob = readonly [number, number, number, number, number, number, number];
+type BlobSet = { name: string; width: number; height: number; blobs: readonly Blob[] };
+
+const BLOB_SETS: readonly BlobSet[] = [
+  {
+    name: "desktop",
+    width: 1440,
+    height: 1106,
+    blobs: [
+      [91, 64, 482, 126, 0.04, 10, 0.8],
+      [161, 390, 212, 68, 0.05, 25, 0.4],
+      [-34.8145, 253.399, 212, 110, 0.05, 10, 1.1],
+      [1242.91, 106.76, 308, 108, 0.07, 10, 1],
+      [781, -43, 298, 98, 0.05, 10, 0.6],
+      [1340.19, 474.58, 218, 76, 0.1, 10, 1.4],
+    ],
+  },
+  {
+    name: "2k",
+    width: 2560,
+    height: 1300,
+    blobs: [
+      [144, 115, 482, 126, 0.04, 10, 0.8],
+      [463, 472, 212, 68, 0.05, 25, 0.4],
+      [-19, 315.399, 212, 110, 0.05, 10, 1.1],
+      [2158, 168.76, 308, 108, 0.07, 10, 1],
+      [1677, -30, 298, 98, 0.05, 10, 0.6],
+      [2365, 520, 265, 93, 0.1, 10, 1.4],
+    ],
+  },
+  {
+    name: "tablet",
+    width: 768,
+    height: 1306,
+    blobs: [
+      [-91, 51.2435, 307.414, 80.3614, 0.04, 6.37789, 0.8],
+      [46, 328, 135, 54, 0.05, 15.9447, 0.4],
+      [-72, 172.041, 135.211, 70.1568, 0.05, 6.37789, 1.1],
+      [696.916, 78.5154, 196.439, 68.8812, 0.07, 6.37789, 1],
+      [402.316, -17, 190.061, 62.5033, 0.05, 6.37789, 0.6],
+    ],
+  },
+  {
+    name: "mobile",
+    width: 375,
+    height: 1064,
+    blobs: [
+      [176.867, -19, 134.411, 52, 0.08, 6, 0.6],
+      [-136.422, 23, 242.546, 87, 0.08, 6, 0.9],
+      [265.801, 398, 131.379, 61, 0.08, 10, 1.2],
+      [-40.4141, 486, 212.228, 68, 0.05, 25, 0.4],
+      [261.758, 148, 155.634, 50, 0.08, 25, 0.5],
+    ],
+  },
+];
 
 export type Ts2026MarqueeOptions = {
   placeholder?: string;
@@ -256,18 +322,116 @@ function buildCard(slides: Ts2026MarqueeSlide[], options: Required<Ts2026Marquee
   return { card, box, composer, panel, hint, hintText, counter, buttons };
 }
 
+const num = (value: number) => String(Math.round(value * 1000) / 1000);
+
+function blobSetSvg(set: BlobSet): string {
+  const filters: string[] = [];
+  const pills: string[] = [];
+  set.blobs.forEach(([x, y, width, height, opacity, blur, depth], i) => {
+    const id = `${BLOBS}-${set.name}-${i}`;
+    const pad = blur * 3;
+    filters.push(
+      `<filter id="${id}" filterUnits="userSpaceOnUse" x="${num(x - pad)}" y="${num(y - pad)}" width="${num(width + pad * 2)}" height="${num(height + pad * 2)}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="${blur}"/></filter>`,
+    );
+    // The drift goes on the outer group so the blur's filter region travels with the pill.
+    pills.push(
+      `<g class="${BLOBS}__blob" style="--ts2026-marquee-blob-depth:${depth}"><g opacity="${opacity}" filter="url(#${id})"><rect x="${x}" y="${y}" width="${width}" height="${height}" rx="${height / 2}" fill="#fff"/></g></g>`,
+    );
+  });
+  return `<svg class="${BLOBS}__set" data-set="${set.name}" viewBox="0 0 ${set.width} ${set.height}" preserveAspectRatio="xMidYMin slice" style="--ts2026-marquee-blob-amp:${num(set.width * BLOB_REACH)}px" focusable="false"><defs>${filters.join("")}</defs>${pills.join("")}</svg>`;
+}
+
+// Draws the background pills (xMidYMin slice matches the gradient's `cover` at `center top`)
+// and eases them toward the cursor on mouse devices.
+function mountBlobs(): (() => void) | null {
+  const hero = document.getElementById(TS2026_MARQUEE_HERO_ID);
+  if (!hero || hero.querySelector(`:scope > .${BLOBS}`)) return null;
+
+  const layer = el("div", BLOBS, BLOB_SETS.map(blobSetSvg).join(""));
+  layer.setAttribute("aria-hidden", "true");
+  hero.prepend(layer);
+
+  const mouse = window.matchMedia?.(MOUSE_QUERY);
+  const reducedMotion = window.matchMedia?.(REDUCED_MOTION_QUERY);
+  const enabled = () => (mouse?.matches ?? true) && !(reducedMotion?.matches ?? false);
+
+  let x = 0;
+  let y = 0;
+  let targetX = 0;
+  let targetY = 0;
+  let frame = 0;
+  let last = 0;
+
+  const paint = () => {
+    layer.style.setProperty("--ts2026-marquee-blob-x", x.toFixed(4));
+    layer.style.setProperty("--ts2026-marquee-blob-y", y.toFixed(4));
+  };
+  const step = (now: number) => {
+    const ease = 1 - Math.exp(-Math.min(now - last, 100) / BLOB_LAG_MS);
+    last = now;
+    x += (targetX - x) * ease;
+    y += (targetY - y) * ease;
+    const settled = Math.abs(targetX - x) < 0.0005 && Math.abs(targetY - y) < 0.0005;
+    if (settled) {
+      x = targetX;
+      y = targetY;
+    }
+    paint();
+    frame = settled ? 0 : requestAnimationFrame(step);
+  };
+  const aim = (nextX: number, nextY: number) => {
+    targetX = nextX;
+    targetY = nextY;
+    if (frame) return;
+    last = performance.now();
+    frame = requestAnimationFrame(step);
+  };
+  const recenter = () => {
+    cancelAnimationFrame(frame);
+    frame = 0;
+    x = y = targetX = targetY = 0;
+    paint();
+  };
+
+  const onPointerMove = (event: PointerEvent) => {
+    if (event.pointerType === "touch" || !enabled()) return;
+    const clamp = (value: number) => Math.max(-1, Math.min(1, value));
+    aim(clamp((event.clientX / window.innerWidth) * 2 - 1), clamp((event.clientY / window.innerHeight) * 2 - 1));
+  };
+  const onPointerLeave = () => aim(0, 0);
+  const onPreferenceChange = () => {
+    if (!enabled()) recenter();
+  };
+
+  window.addEventListener("pointermove", onPointerMove, { passive: true });
+  document.documentElement.addEventListener("pointerleave", onPointerLeave);
+  mouse?.addEventListener("change", onPreferenceChange);
+  reducedMotion?.addEventListener("change", onPreferenceChange);
+
+  return () => {
+    window.removeEventListener("pointermove", onPointerMove);
+    document.documentElement.removeEventListener("pointerleave", onPointerLeave);
+    mouse?.removeEventListener("change", onPreferenceChange);
+    reducedMotion?.removeEventListener("change", onPreferenceChange);
+    cancelAnimationFrame(frame);
+    layer.remove();
+  };
+}
+
 export function initTs2026Marquee(userOptions: Ts2026MarqueeOptions = {}): (() => void) | null {
+  const unmountBlobs = mountBlobs();
   const phone = window.matchMedia?.(PHONE_QUERY);
   let teardown = mount(userOptions, phone?.matches ?? false);
-  if (!teardown || !phone) return teardown;
   const onChange = (event: MediaQueryListEvent) => {
     teardown?.();
     teardown = mount(userOptions, event.matches);
   };
-  phone.addEventListener("change", onChange);
+  if (teardown) phone?.addEventListener("change", onChange);
+  if (!teardown && !unmountBlobs) return null;
   return () => {
-    phone.removeEventListener("change", onChange);
+    phone?.removeEventListener("change", onChange);
     teardown?.();
+    unmountBlobs?.();
   };
 }
 
@@ -509,6 +673,10 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     window.clearTimeout(mediaTimer);
     if (!media) return;
     if (media instanceof HTMLVideoElement) {
+      // Docked, the slide dims and blurs once it finishes, so play it through once and let it rest on its
+      // last frame; looping would wrap to the first frame before the wrap is noticed and the video paused.
+      const loop = media.loop;
+      if (card.dataset.dock) media.loop = false;
       let last = 0;
       const onTimeUpdate = () => {
         if (media.currentTime + 0.5 < last) onMediaDone();
@@ -519,6 +687,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
       unwatchMedia = () => {
         media.removeEventListener("ended", onMediaDone);
         media.removeEventListener("timeupdate", onTimeUpdate);
+        media.loop = loop;
       };
     } else {
       mediaTimer = window.setTimeout(onMediaDone, options.imageDuration);

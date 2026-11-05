@@ -65,6 +65,65 @@
   pointer-events: none;
 }
 
+/* Soft pills over the gradient; the script draws one set per breakpoint and nudges them with the mouse. */
+#ts2026-marquee .ts2026-marquee-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#ts2026-marquee .ts2026-marquee-blobs__set {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+
+#ts2026-marquee .ts2026-marquee-blobs__set[data-set="desktop"] {
+  display: block;
+}
+
+@media (max-width: 1023px) {
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="desktop"] {
+    display: none;
+  }
+
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="mobile"] {
+    display: block;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="mobile"] {
+    display: none;
+  }
+
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="tablet"] {
+    display: block;
+  }
+}
+
+@media (min-width: 2560px) {
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="desktop"] {
+    display: none;
+  }
+
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="2k"] {
+    display: block;
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-blobs__blob {
+  --ts2026-marquee-blob-shift: calc(var(--ts2026-marquee-blob-depth, 1) * var(--ts2026-marquee-blob-amp, 0px));
+  transform: translate(
+    calc(var(--ts2026-marquee-blob-x, 0) * var(--ts2026-marquee-blob-shift)),
+    calc(var(--ts2026-marquee-blob-y, 0) * var(--ts2026-marquee-blob-shift) * 0.6)
+  );
+}
+
 #ts2026-marquee .marquee--blade > .container {
   padding-top: var(--marquee-hero-pad-top);
   padding-bottom: max(0px, calc(var(--marquee-curve-h) - var(--marquee-window-overlap)));
