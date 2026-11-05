@@ -6,6 +6,10 @@ const PREFIX = "ts2026-marquee-prompts";
 const SWEEP_ANIMATION = "ts2026-marquee-border-sweep";
 const SWEEP_HOVER_RATE = 0.35;
 
+const HAVE_CURRENT_DATA = 2;
+const FRAME_EVENTS = ["loadeddata", "seeked", "canplay", "error"] as const;
+const FRAME_WAIT_MS = 4000;
+
 const PHONE_QUERY = "(max-width: 767px)";
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
 const TABLET_QUERY = "(min-width: 768px) and (max-width: 1023px)";
@@ -110,6 +114,8 @@ function cloneMedia(slide: Ts2026MarqueeSlide): HTMLImageElement | HTMLVideoElem
   clone.removeAttribute("id");
   clone.dataset.ts2026MarqueeSlide = String(slide.index);
   if (clone instanceof HTMLVideoElement) {
+    // The poster is the hero still, framed differently from the video: it flashes before playback.
+    clone.removeAttribute("poster");
     clone.muted = true;
     clone.defaultMuted = true;
     clone.playsInline = true;
@@ -133,6 +139,7 @@ function playVideo(video: HTMLVideoElement) {
 
 function stopVideo(video: HTMLVideoElement) {
   video.pause();
+  if (video.currentTime === 0) return;
   try {
     video.currentTime = 0;
   } catch {
@@ -310,7 +317,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     const held = docked && (expanded || mediaDone);
     const cued = !hintSeen && !expanded && (!docked || mediaDone);
     const hinted = (cued && hintDue) || openHint;
+    const current = clones.get(active);
     card.toggleAttribute("data-teaser", held);
+    card.toggleAttribute("data-playing", Boolean(current) && !held && !playHeld && !mediaDone);
     card.toggleAttribute("data-pulse", cued && pulseDue);
     card.toggleAttribute("data-hint", hinted);
     if (hinted) {
@@ -321,7 +330,6 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     if (hinted) composer.setAttribute("aria-describedby", hint.id);
     else composer.removeAttribute("aria-describedby");
     root.toggleAttribute("data-ts2026-marquee-dim", held);
-    const current = clones.get(active);
     if (current instanceof HTMLVideoElement) {
       if (held || playHeld || document.hidden) current.pause();
       else playVideo(current);
@@ -412,6 +420,31 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     };
     target.addEventListener("transitionend", onEnd);
     timer = window.setTimeout(finish, timeout);
+    cancelSettle = cleanup;
+  };
+
+  const frameReady = (video: HTMLVideoElement) => video.readyState >= HAVE_CURRENT_DATA && !video.seeking;
+  const whenFrameReady = (media: HTMLImageElement | HTMLVideoElement | undefined, done: () => void) => {
+    cancelSettle?.();
+    if (!(media instanceof HTMLVideoElement) || frameReady(media)) {
+      done();
+      return;
+    }
+    let timer = 0;
+    const cleanup = () => {
+      for (const type of FRAME_EVENTS) media.removeEventListener(type, onEvent);
+      window.clearTimeout(timer);
+      cancelSettle = null;
+    };
+    const finish = () => {
+      cleanup();
+      done();
+    };
+    const onEvent = (event: Event) => {
+      if (event.type === "error" || frameReady(media)) finish();
+    };
+    for (const type of FRAME_EVENTS) media.addEventListener(type, onEvent);
+    timer = window.setTimeout(finish, FRAME_WAIT_MS);
     cancelSettle = cleanup;
   };
 
@@ -546,12 +579,14 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     const same = index === active;
     playHeld = true;
     select(index);
-    foldThenDock(() => {
-      reveal(index);
-      const incoming = clones.get(index);
-      if (same || !incoming || reducedMotion()) release();
-      else afterTransition(incoming, "opacity", 1000, release);
-    });
+    const incoming = clones.get(index);
+    foldThenDock(() =>
+      whenFrameReady(incoming, () => {
+        reveal(index);
+        if (same || !incoming || reducedMotion()) release();
+        else afterTransition(incoming, "opacity", 1000, release);
+      }),
+    );
   };
   card.addEventListener("click", onClick);
 
