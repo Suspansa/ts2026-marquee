@@ -1,9 +1,8 @@
 @import "./marquee-bg.css";
 
 #ts2026-marquee {
-  /* The area above the bottom oval: the background is masked to it, so the oval itself stays transparent */
   --marquee-curve-cut: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 77.17' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V77.17C1208 26.63 967.1 0 720 0C472.9 0 232 26.63 0 77.17Z'/%3E%3C/svg%3E");
-  --marquee-curve-h: 5.36vw; /* 77.17 / 1440 of the width */
+  --marquee-curve-h: 5.36vw;
   --marquee-bg: var(--marquee-bg-desktop);
   --marquee-window-overlap: 48px;
   --marquee-window-width: 1132px;
@@ -51,8 +50,6 @@
   isolation: isolate;
 }
 
-/* The background, with the oval at the bottom cut out (transparent), so whatever sits under the marquee shows
-   through it. The window frame still overlaps the cut, as in the design. */
 #ts2026-marquee .marquee--blade::before {
   content: "";
   position: absolute;
@@ -123,8 +120,13 @@
   padding: var(--marquee-frame-pad);
   border: 0;
   border-radius: var(--marquee-frame-radius);
-  background: rgb(255 255 255 / 0.15);
-  box-shadow: 0 12px 20px rgb(0 30 91 / 0.05);
+  background: rgb(110 173 255 / 0.32);
+  box-shadow: 0 12px 24px rgb(40 120 235 / 0.2);
+  overflow: visible;
+}
+
+#ts2026-marquee .marquee--blade.marquee--center-image {
+  overflow: clip visible;
 }
 
 #ts2026-marquee .marquee--center-image .image__wrapper::before {
@@ -202,7 +204,6 @@
   --marquee-card-accent: #2b73ff;
   --marquee-card-accent-soft: #e6f1ff;
   --marquee-card-font: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  --marquee-greeting-font: "ITC Avant Garde", "Avant Garde for Salesforce", var(--marquee-card-font);
   --marquee-greeting-color: #0e2a5b;
   --marquee-pill-stroke: #2e68f5;
   --marquee-pill-stroke-soft: #66a5f8;
@@ -210,9 +211,8 @@
   --marquee-pill-button-open: #9fb3c8;
   --marquee-unfold: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
   --marquee-glow-lap: 4s;
-  /* Symmetric S-curve: ~2.5x the average speed at the ends, ~0.6x in the middle */
   --marquee-glow-ease: cubic-bezier(0.2, 0.5, 0.8, 0.5);
-  --marquee-glow-step: 400ms; /* extra start delay per prompt, top to bottom */
+  --marquee-glow-step: 400ms;
   --marquee-glow-sky: #a6e2ff;
   --marquee-glow-mid: #5aa0ff;
   --marquee-glow-blue: #2e68f5;
@@ -221,18 +221,9 @@
 @property --ts2026-glow-a {
   syntax: "<angle>";
   inherits: false;
-  /* The gradient below has its blue centred at 180deg; -90deg turns that onto the right side */
   initial-value: -90deg;
 }
 
-/* Glow ring, drawn by ::before on the pill and on each prompt. The design's stroke as a
-   conic gradient: solid blue on the right, sky blue fading to nothing on the left. The whole gradient
-   turns about the element's centre, so the light and the blue chase each other round the
-   edge and the colours flow into one another. At rest (-90deg) it is exactly the design.
-   The lap is two half-turns, right -> bottom -> left and left -> top -> right, each eased with
-   --marquee-glow-ease: fast at the start and end of a half-turn (the short sides), slowest in the
-   middle (the bottom and top of the button). The curve's slopes match at both ends, so the speed is
-   continuous where the halves meet and nothing jerks. */
 @keyframes ts2026-marquee-glow-spin {
   0% {
     --ts2026-glow-a: -90deg;
@@ -246,14 +237,12 @@
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__box::before,
+#ts2026-marquee .ts2026-marquee-prompts__box::after,
 #ts2026-marquee .ts2026-marquee-prompts__prompt::before {
   content: "";
   position: absolute;
   box-sizing: border-box;
   border-radius: inherit;
-  /* One smooth hump, symmetric about 180deg: solid blue for 60deg, then an even slope through mid and
-     sky blue into a long ease-out to transparent at the 0/360 seam (same colour on both sides, so the
-     loop has no visible join). Roughly half the lap reads as empty, with no hard edge anywhere. */
   background: conic-gradient(
     from var(--ts2026-glow-a),
     rgb(166 226 255 / 0) 0deg,
@@ -338,19 +327,14 @@
 }
 
 #ts2026-marquee .ts2026-marquee-prompts {
-  --prompts-greeting-y: 28.2cqw;
-  --prompts-greeting-size: 2.33cqw;
-  --prompts-logo-size: 2.85cqw;
   --prompts-pill-y: 33.96cqw;
-  --prompts-pill-h: 44px;
+  --prompts-pill-h: 48px;
   --prompts-open-h: 60px;
-  --prompts-pill-w: round(min(max(41.6cqw, 440px), 100%), 2px); /* even, so the -50% centring lands on a whole pixel */
-  /* The "+" and the gaps around it are whole pixels: a fractional size or offset re-rasterises on a different
-     pixel when the scale transition promotes the button to its own layer and drops it again (flicker + 1px shift) */
+  --prompts-pill-w: round(min(max(41.6cqw, 440px), 100%), 2px);
   --prompts-add-size: round(calc(var(--prompts-pill-h) * 0.58), 1px);
   --prompts-add-gap: round(calc(var(--prompts-pill-h) * 0.22), 1px);
   --prompts-add-inset: calc((var(--prompts-pill-h) - var(--prompts-add-size)) / 2);
-  --prompts-dock-open-extra: calc(var(--marquee-card-inset) - var(--prompts-add-inset)); /* what the pill's 9px lacks to the card's 16px */
+  --prompts-dock-open-extra: calc(var(--marquee-card-inset) - var(--prompts-add-inset));
   --prompts-pill-bottom: max(2.6cqw, 24px);
   position: absolute;
   inset: var(--marquee-frame-pad);
@@ -362,75 +346,6 @@
   font-size: 16px;
   line-height: 1.3;
   text-align: left;
-}
-
-#ts2026-marquee .ts2026-marquee-prompts__patch {
-  --prompts-patch-rx: 28cqw;
-  --prompts-patch-ry: 10cqw;
-  position: absolute;
-  left: 50%;
-  top: calc(var(--prompts-greeting-y) - var(--prompts-patch-ry));
-  width: calc(var(--prompts-patch-rx) * 2);
-  height: calc(var(--prompts-patch-ry) + 3.8cqw);
-  transform: translateX(-50%);
-  background: radial-gradient(
-    var(--prompts-patch-rx) var(--prompts-patch-ry) at 50% var(--prompts-patch-ry),
-    #e0eaf8 0%,
-    #e2ebf8 15%,
-    #e6eefa 35%,
-    #ebf2fc 55%,
-    #f1f7fd 78%,
-    #f8fbfe 100%
-  );
-  -webkit-mask:
-    radial-gradient(var(--prompts-patch-rx) var(--prompts-patch-ry) at 50% var(--prompts-patch-ry), #000 60%, transparent 100%),
-    linear-gradient(#000 calc(100% - 2cqw), transparent);
-  -webkit-mask-composite: source-in;
-  mask:
-    radial-gradient(var(--prompts-patch-rx) var(--prompts-patch-ry) at 50% var(--prompts-patch-ry), #000 60%, transparent 100%),
-    linear-gradient(#000 calc(100% - 2cqw), transparent);
-  mask-composite: intersect;
-}
-
-#ts2026-marquee .ts2026-marquee-prompts__greeting {
-  position: absolute;
-  left: 50%;
-  top: var(--prompts-greeting-y);
-  display: flex;
-  align-items: center;
-  gap: 0.5cqw;
-  margin: 0;
-  transform: translate(-50%, -50%);
-  color: var(--marquee-greeting-color);
-  font-family: var(--marquee-greeting-font);
-  font-size: var(--prompts-greeting-size);
-  font-weight: 500;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  white-space: nowrap;
-}
-
-#ts2026-marquee .ts2026-marquee-prompts__logo {
-  flex: 0 0 auto;
-  display: block;
-  width: var(--prompts-logo-size);
-  height: var(--prompts-logo-size);
-}
-
-#ts2026-marquee .ts2026-marquee-prompts__logo svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-#ts2026-marquee .ts2026-marquee-prompts__patch,
-#ts2026-marquee .ts2026-marquee-prompts__greeting {
-  transition: opacity 0.35s ease;
-}
-
-#ts2026-marquee[data-ts2026-marquee-active]:not([data-ts2026-marquee-active="0"]) .ts2026-marquee-prompts__patch,
-#ts2026-marquee[data-ts2026-marquee-active]:not([data-ts2026-marquee-active="0"]) .ts2026-marquee-prompts__greeting {
-  opacity: 0;
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__box {
@@ -473,6 +388,26 @@
   transition: opacity var(--marquee-unfold);
 }
 
+#ts2026-marquee .ts2026-marquee-prompts__box::after {
+  --glow-halo: 3px;
+  inset: calc(-1 * var(--glow-halo));
+  z-index: -1;
+  padding: var(--glow-halo);
+  border-radius: calc(var(--prompts-pill-h) / 2 + var(--glow-halo));
+  filter: blur(1.5px);
+  opacity: 0.15;
+  transition: opacity var(--marquee-unfold);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-teaser][data-state="collapsed"] .ts2026-marquee-prompts__box::after {
+  border-radius: calc(var(--marquee-card-radius) + var(--glow-halo));
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box::after {
+  opacity: 0;
+  animation: none;
+}
+
 
 #ts2026-marquee .ts2026-marquee-prompts[data-state="collapsed"] .ts2026-marquee-prompts__box:hover {
   box-shadow: 0 12px 32px rgb(140 196 255 / 0.75), 0 1px 3px rgb(0 30 91 / 0.08);
@@ -480,25 +415,16 @@
 
 #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box {
   border-radius: var(--marquee-card-radius);
-  /* The open panel keeps the same 1px light-grey card outline as the teaser card, plus the soft shadow */
   box-shadow: var(--marquee-card-shadow);
 }
 
 #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box::before {
-  /* The pill's glow ring fades out as the panel opens and stays off while it is open */
   opacity: 0;
   animation: none;
 }
 
-/* The row grows up and down equally, so the placeholder and the "+" stay where the pill had them */
 #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"]:not([data-dock]) .ts2026-marquee-prompts__box {
-  translate: 0 calc((var(--prompts-pill-h) - var(--prompts-open-h)) / 2 - var(--prompts-lift, 0px));
-}
-
-/* Where the window is too short for the open card (tablets) the script lifts it by --prompts-lift so it stays
-   inside the window; the greeting it would half-cover fades out meanwhile */
-#ts2026-marquee .ts2026-marquee-prompts[data-lifted] .ts2026-marquee-prompts__greeting {
-  opacity: 0;
+  translate: 0 calc(-1 * var(--prompts-lift, 0px));
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__composer {
@@ -530,12 +456,6 @@
   height: var(--prompts-open-h);
 }
 
-/* Docked (and teaser) the row keeps the pill's height and padding, so the "+" and the placeholder never move
-   when the card unfolds or folds; the CTA's bottom margin supplies the card rhythm above the "+" instead */
-
-/* Docked as a card (teaser with the CTA, or open) it gets a full inset under the "+" as well: the row grows by the
-   difference and the box slides down by the same amount in the same timing, so the "+" stays put on screen while
-   the bottom edge moves */
 #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"][data-teaser] .ts2026-marquee-prompts__composer {
   height: calc(var(--prompts-pill-h) + var(--prompts-dock-open-extra));
   padding-bottom: var(--prompts-dock-open-extra);
@@ -549,7 +469,8 @@
   flex: 1 1 auto;
   min-width: 0;
   color: #8a8a8a;
-  font-size: 16px;
+  font-size: 14px;
+  line-height: 20px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -567,7 +488,7 @@
   background: var(--marquee-pill-button);
   color: #fff;
   transition: background-color var(--marquee-unfold), scale var(--marquee-unfold);
-  will-change: scale; /* stays on its own layer, so the end of the transition never re-rasterises it */
+  will-change: scale;
 }
 
 #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__add {
@@ -613,23 +534,21 @@
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__hint {
-  /* One glass shape: the box and the pointer share a single fill + blur (::before),
-     one border with a gap at the pointer (::after) and the pointer's own two strokes. */
   --hint-r: 8px;
   --hint-b: 1.5px;
   --hint-stroke: rgb(197 210 242 / 0.5);
   --hint-fill: rgb(234 241 253 / 0.2);
-  --hint-tip: 11px; /* rotated square that draws the pointer strokes (≈15.5×7.8px pointer, as in the design) */
+  --hint-tip: 11px;
   --hint-tip-w: calc(var(--hint-tip) * 1.4142);
   --hint-tip-h: calc(var(--hint-tip) * 0.7071);
   --hint-tip-fill: calc(var(--hint-tip-h) - 1px);
   --hint-gap: calc(var(--hint-tip-w) - var(--hint-b) * 2.8284);
-  --hint-tip-p: 0.5; /* pointer centre: fraction of the hint width from the right… */
-  --hint-tip-off: 0px; /* …plus this offset */
+  --hint-tip-p: 0.5;
+  --hint-tip-off: 0px;
   --hint-tip-x: calc(var(--hint-tip-p) * 100% + var(--hint-tip-off));
-  --hint-flip: 1; /* -1 puts the pointer on top */
+  --hint-flip: 1;
   position: absolute;
-  right: calc(var(--prompts-add-gap) + var(--prompts-add-size) / 2); /* under the centre of the "+" */
+  right: calc(var(--prompts-add-gap) + var(--prompts-add-size) / 2);
   bottom: calc(100% + 16px);
   z-index: 3;
   box-sizing: border-box;
@@ -656,7 +575,6 @@
   mask-repeat: no-repeat;
 }
 
-/* Fill + blur, masked to the rounded box plus the pointer triangle */
 #ts2026-marquee .ts2026-marquee-prompts__hint::before {
   z-index: -1;
   inset: calc(var(--hint-tip-h) * -1) 0;
@@ -672,30 +590,35 @@
     radial-gradient(circle at top right, #000 calc(var(--hint-r) - 0.5px), transparent calc(var(--hint-r) + 0.5px)),
     radial-gradient(circle at top left, #000 calc(var(--hint-r) - 0.5px), transparent calc(var(--hint-r) + 0.5px)),
     linear-gradient(to bottom left, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
-    linear-gradient(to bottom right, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px));
+    linear-gradient(to bottom right, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0);
   mask-size:
-    100% calc(100% - (var(--hint-tip-h) + var(--hint-r)) * 2),
-    calc(100% - var(--hint-r) * 2) var(--hint-r),
-    calc(100% - var(--hint-r) * 2) var(--hint-r),
+    100% calc(100% - (var(--hint-tip-h) + var(--hint-r)) * 2 + 2px),
+    calc(100% - var(--hint-r) * 2 + 2px) var(--hint-r),
+    calc(100% - var(--hint-r) * 2 + 2px) var(--hint-r),
     var(--hint-r) var(--hint-r),
     var(--hint-r) var(--hint-r),
     var(--hint-r) var(--hint-r),
     var(--hint-r) var(--hint-r),
     var(--hint-tip-fill) var(--hint-tip-fill),
-    var(--hint-tip-fill) var(--hint-tip-fill);
+    var(--hint-tip-fill) var(--hint-tip-fill),
+    2px calc(var(--hint-tip-h) - 1px),
+    calc(var(--hint-tip-fill) * 2 - 2px) 2px;
   mask-position:
-    left 0 top calc(var(--hint-tip-h) + var(--hint-r)),
-    left var(--hint-r) top var(--hint-tip-h),
-    left var(--hint-r) bottom var(--hint-tip-h),
+    left 0 top calc(var(--hint-tip-h) + var(--hint-r) - 1px),
+    left calc(var(--hint-r) - 1px) top var(--hint-tip-h),
+    left calc(var(--hint-r) - 1px) bottom var(--hint-tip-h),
     left 0 top var(--hint-tip-h),
     right 0 top var(--hint-tip-h),
     left 0 bottom var(--hint-tip-h),
     right 0 bottom var(--hint-tip-h),
     right calc(var(--hint-tip-x) + var(--hint-tip-p) * var(--hint-tip-fill)) bottom 1px,
-    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 1) * var(--hint-tip-fill)) bottom 1px;
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 1) * var(--hint-tip-fill)) bottom 1px,
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) * 2 - 1) * 1px) bottom 2px,
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 0.5) * (var(--hint-tip-fill) * 2 - 2px)) bottom calc(var(--hint-tip-h) - 1px);
 }
 
-/* Border + shadow; the shadow is cut away under the pointer and the border opens where it joins */
 #ts2026-marquee .ts2026-marquee-prompts__hint::after {
   inset: 0;
   box-sizing: border-box;
@@ -721,7 +644,6 @@
     right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 1) * var(--hint-tip-h)) bottom calc(var(--hint-tip-h) * -1);
 }
 
-/* The pointer's two diagonal strokes */
 #ts2026-marquee .ts2026-marquee-prompts__hint-arrow {
   position: absolute;
   right: calc(var(--hint-tip-x) - var(--hint-tip-w) / 2);
@@ -766,6 +688,34 @@
   bottom: calc(100% + 4px);
 }
 
+#ts2026-marquee .ts2026-marquee-prompts[data-hint-open] .ts2026-marquee-prompts__hint {
+  --hint-tip-p: 0.5;
+  --hint-tip-off: 0px;
+  right: 50%;
+  transform: translate(50%, 6px);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-hint-open][data-hint] .ts2026-marquee-prompts__hint {
+  transform: translate(50%, 0);
+}
+
+@media (min-width: 1024px) {
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint {
+    --hint-flip: -1;
+    top: calc(100% + 16px);
+    bottom: auto;
+    transform: translate(50%, -6px);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below][data-hint] .ts2026-marquee-prompts__hint {
+    transform: translate(50%, 0);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint-arrow {
+    top: calc(var(--hint-tip-h) * -1);
+    bottom: auto;
+    transform: scaleY(-1);
+  }
+}
+
 #ts2026-marquee .ts2026-marquee-prompts__panel {
   display: grid;
   grid-template-rows: 0fr;
@@ -806,7 +756,6 @@
 
 #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__list {
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--marquee-card-line);
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__cta {
@@ -841,7 +790,6 @@
   gap: 16px;
   box-sizing: border-box;
   min-height: 44px;
-  /* One inset above the CTA, and one inset from the CTA down to the "+": the "+" already sits add-inset inside its own row */
   margin: var(--marquee-card-inset) 0 calc(var(--marquee-card-inset) - var(--prompts-add-inset));
   padding: 10px 24px;
   border-radius: 12px;
@@ -884,12 +832,11 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 0 10px;
-  border-top: 1px solid var(--marquee-card-line);
+  padding: 8px 0 10px;
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__heading {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -904,7 +851,7 @@
 
 #ts2026-marquee .ts2026-marquee-prompts__list {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   margin: 0;
   padding: 0 0 20px;
   list-style: none;
@@ -950,12 +897,17 @@
   isolation: isolate;
 }
 
+@media (min-width: 1024px) {
+  #ts2026-marquee .ts2026-marquee-prompts__prompt {
+    min-height: 56px;
+  }
+}
+
 #ts2026-marquee .ts2026-marquee-prompts__prompt::before {
   inset: -2px;
   z-index: -1;
   padding: 2px;
   transition: opacity 0.25s ease;
-  /* The lap waits until the panel is open, see the [data-state="expanded"] rule below */
   animation-play-state: paused;
 }
 
@@ -963,10 +915,6 @@
   animation-play-state: running;
 }
 
-/* Each prompt's ring starts its lap --marquee-glow-step later than the one above it, so the
-   glow ripples down the list instead of turning in lockstep. --ts2026-glow-i is the item's
-   0-based index; the delay is counted from the moment the panel expands (the ring is paused
-   until then). Covers up to eight prompts; a longer list repeats the last delay. */
 #ts2026-marquee .ts2026-marquee-prompts__item .ts2026-marquee-prompts__prompt::before {
   animation-delay: calc(var(--marquee-glow-step) * var(--ts2026-glow-i, 0));
 }
@@ -1012,9 +960,6 @@
   height: 20px;
 }
 
-/* Spark icon: one star at rest, three twinkling stars on hover.
-   The svg is 32px drawn over the 20px slot so the echo stars can sit
-   outside it without moving the label. */
 #ts2026-marquee .ts2026-marquee-prompts__icon {
   position: relative;
   overflow: visible;
@@ -1022,7 +967,7 @@
 
 #ts2026-marquee .ts2026-marquee-prompts__icon svg {
   position: absolute;
-  top: -5.7px; /* main star centre (12.7, 15.7) in the 32px viewBox -> slot centre (10, 10) */
+  top: -5.7px;
   left: -2.7px;
   display: block;
   width: 32px;
@@ -1060,8 +1005,6 @@
   transform: scale(1);
 }
 
-/* Three stars shine with different periods (ratio ~ 3:4:5) so the
-   pattern drifts in and out of phase instead of pulsing in lockstep. */
 #ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-spark--main path {
   animation: ts2026-marquee-spark-shine-main 5.4s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite;
 }
@@ -1074,7 +1017,6 @@
   animation: ts2026-marquee-spark-shine-low 6.75s cubic-bezier(0.45, 0, 0.55, 1) -2.3s infinite;
 }
 
-/* Uneven keyframes: a quick bright flash, a slow fade, a soft second glow. */
 @keyframes ts2026-marquee-spark-shine-top {
   0%,
   100% {
@@ -1181,21 +1123,15 @@
   #ts2026-marquee {
     --marquee-card-radius: 20px;
   }
-  #ts2026-marquee .ts2026-marquee-prompts__placeholder {
-    font-size: 15px;
-  }
   #ts2026-marquee .ts2026-marquee-prompts__list {
     gap: 8px;
     padding-bottom: 16px;
   }
   #ts2026-marquee .ts2026-marquee-prompts__header {
-    padding: 14px 0 10px;
+    padding: 8px 0 10px;
   }
 }
 
-/* Phones: the window is a portrait frame (media cropped to 5:8) and the prompts card lives inside it, as on
-   desktop. The frame's padding hangs outside the content column, so the media itself stays aligned with the CTA
-   above it. The card grows downward only, and the hint, CTA and list are tightened to the narrower card. */
 @media (max-width: 767px) {
   #ts2026-marquee {
     --marquee-card-radius: 24px;
@@ -1212,31 +1148,15 @@
     aspect-ratio: 5 / 8;
   }
   #ts2026-marquee .marquee--center-image .image__wrapper > img {
-    object-position: 50% 0; /* a landscape still keeps its title bar; a portrait asset is not cropped at all */
+    object-position: 50% 0;
   }
   #ts2026-marquee .ts2026-marquee-prompts {
-    --prompts-greeting-y: 67cqw;
-    --prompts-greeting-size: 20px;
-    --prompts-logo-size: 24px;
-    --prompts-pill-y: 82cqw;
-    --prompts-open-h: var(--prompts-pill-h); /* the row keeps the pill height: the card only grows downward */
+    --prompts-pill-y: 86.67cqw;
+    --prompts-pill-h: 44px;
+    --prompts-open-h: var(--prompts-pill-h);
     --prompts-pill-w: round(calc(100% - 20px), 2px);
-    /* 10px from the window's edges once the card has unfolded with the CTA (the box slides down by the
-       dock-open extra then, so the "+" stays put) */
     --prompts-pill-bottom: calc(10px + var(--prompts-dock-open-extra));
     --prompts-add-size: 24px;
-  }
-  #ts2026-marquee .ts2026-marquee-prompts__patch {
-    /* Wide enough to hide the greeting baked into the still right across the window */
-    --prompts-patch-rx: 80cqw;
-    --prompts-patch-ry: 22cqw;
-    height: calc(var(--prompts-patch-ry) + 12cqw);
-  }
-  #ts2026-marquee .ts2026-marquee-prompts__greeting {
-    gap: 6px;
-  }
-  #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"]:not([data-dock]) .ts2026-marquee-prompts__box {
-    translate: 0 calc(-1 * var(--prompts-lift, 0px));
   }
   #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box {
     box-shadow: 0 0 0 1px var(--marquee-card-line), 0 6px 16px rgb(0 30 91 / 0.06);
@@ -1258,14 +1178,20 @@
     justify-content: space-between;
   }
   #ts2026-marquee .ts2026-marquee-prompts__header {
-    padding: 18px 0 8px;
+    padding: 8px 0 8px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__heading {
+    font-size: 9px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__counter {
+    font-size: 11px;
   }
   #ts2026-marquee .ts2026-marquee-prompts__list {
     gap: 8px;
     padding-bottom: 10px;
   }
   #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__list {
-    padding-bottom: 12px;
+    padding-bottom: 14px;
   }
   #ts2026-marquee .ts2026-marquee-prompts__prompt {
     min-height: 38px;
@@ -1275,7 +1201,7 @@
   #ts2026-marquee .ts2026-marquee-prompts__hint {
     --hint-tip-p: 0;
     --hint-tip-off: calc(var(--prompts-add-gap) + var(--prompts-add-size) / 2);
-    right: 0; /* flush with the pill's right edge, the pointer still under the "+" */
+    right: 0;
     bottom: calc(100% + 14px);
     height: 38px;
     padding: 0 12px;
@@ -1287,8 +1213,6 @@
     transform: none;
   }
   #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__hint {
-    /* Over the top of the CTA. The fill is opaque here: a backdrop blur across the CTA's edge would smear a blue
-       band through the tooltip. */
     --hint-fill: rgb(236 243 253 / 0.96);
     bottom: calc(100% + 12px);
   }
@@ -1302,10 +1226,9 @@
   #ts2026-marquee .marquee--center-image .image__wrapper > .image__asset,
   #ts2026-marquee .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media,
   #ts2026-marquee .marquee--center-image .image__wrapper::after,
-  #ts2026-marquee .ts2026-marquee-prompts__patch,
-  #ts2026-marquee .ts2026-marquee-prompts__greeting,
   #ts2026-marquee .ts2026-marquee-prompts__box,
   #ts2026-marquee .ts2026-marquee-prompts__box::before,
+  #ts2026-marquee .ts2026-marquee-prompts__box::after,
   #ts2026-marquee .ts2026-marquee-prompts__composer,
   #ts2026-marquee .ts2026-marquee-prompts__add,
   #ts2026-marquee .ts2026-marquee-prompts__panel,
@@ -1325,8 +1248,9 @@
     animation: none;
   }
   #ts2026-marquee .ts2026-marquee-prompts__box::before,
+  #ts2026-marquee .ts2026-marquee-prompts__box::after,
   #ts2026-marquee .ts2026-marquee-prompts__prompt::before {
-    animation: none; /* the rest angle (-90deg) is the design's static stroke */
+    animation: none;
   }
   #ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:first-of-type {
     opacity: 0.35;
@@ -1334,19 +1258,32 @@
   }
 }
 
-/* Footnote under the oval, added by ts2026-marquee.ts */
-#ts2026-marquee .ts2026-marquee-footnote {
+#ts2026-marquee #ts2026-marquee-text {
   margin: 8px 0 94px;
   padding-inline: 16px;
+  background: none;
+}
+#ts2026-marquee #ts2026-marquee-text > .container,
+#ts2026-marquee #ts2026-marquee-text article,
+#ts2026-marquee #ts2026-marquee-text header {
+  display: block;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+#ts2026-marquee #ts2026-marquee-text .headline {
+  margin: 0;
   font-family: var(--marquee-card-font);
   font-size: 12px;
+  font-weight: 400;
   line-height: 18px;
+  letter-spacing: normal;
   color: #444;
   text-align: center;
 }
 
 @media (max-width: 767px) {
-  #ts2026-marquee .ts2026-marquee-footnote {
+  #ts2026-marquee #ts2026-marquee-text {
     margin-top: 24px;
     margin-bottom: 48px;
   }

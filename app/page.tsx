@@ -174,14 +174,14 @@ export default function Home() {
                             <div className="video-html5 desktop-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
 
-                                    <source src="  b" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-3.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
                             <div className="video-html5 mobile-tablet-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
 
-                                    <source src=" https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-1.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-3.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -208,10 +208,36 @@ export default function Home() {
 
         </div>
 
+        <div id="1793890179097_1b5t" data-blade-id="1793890179097_1b5t" data-blade-position="1" data-blade-name="sf/text" data-blade-variant="text" data-blade-source="www" data-blade-type="blade">
+
+            <section id="ts2026-marquee-text" className="relative text--blade theme--light_gradient  theme-light-blue-20
+                    ">
+
+                <div className="container container--min-spacing-bottom container--min-spacing-top">
+                    <article className="grid grid_main text__blade--link_below text--center
+                            " data-module-id="1793890179097_1b5t" data-module-name="* Some features are only available with Tableau Cloud." data-module-position="1" data-module-type="headline" data-module-track-impressions="false">
+
+                        <header className="text__blade-heading eyebrow--large ">
+
+                            <h2 className="headline text__headline--large">
+                                
+                                    * Some features are only available with Tableau Cloud.
+                                
+
+                            </h2>
+
+                        </header>
+
+                    </article>
+                </div>
+
+            </section>
+
+        </div>
+
     </div>
 
 </div>
-
 
     </div>
   );
