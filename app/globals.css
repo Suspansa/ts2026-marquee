@@ -388,6 +388,11 @@
   backdrop-filter: blur(max(2px, 0.37cqw));
 }
 
+/* A slide change has no fade: the veil stays on the outgoing slide and drops in the same frame as the cut. */
+#ts2026-marquee[data-ts2026-marquee-cut] .marquee--center-image .image__wrapper::after {
+  transition: none;
+}
+
 #ts2026-marquee .ts2026-marquee-prompts {
   --prompts-pill-y: 33.96cqw;
   --prompts-pill-h: 48px;

@@ -13,6 +13,9 @@ const FRAME_WAIT_MS = 4000;
 const PRESENT_WAIT_MS = 1000;
 const ACTIVE = "data-ts2026-marquee-active";
 const ENTERING = "data-ts2026-marquee-entering";
+const DIM = "data-ts2026-marquee-dim";
+// Set while the veil is lifting with a cut to the next slide, so it drops at once instead of fading.
+const CUT = "data-ts2026-marquee-cut";
 
 const PHONE_QUERY = "(max-width: 767px)";
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
@@ -526,7 +529,11 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     }
     if (hinted) composer.setAttribute("aria-describedby", hint.id);
     else composer.removeAttribute("aria-describedby");
-    root.toggleAttribute("data-ts2026-marquee-dim", held);
+    // While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
+    // it drops together with the cut.
+    const dim = held || (playHeld && root.hasAttribute(DIM));
+    if (dim) root.removeAttribute(CUT);
+    root.toggleAttribute(DIM, dim);
     if (current instanceof HTMLVideoElement) {
       if (held || playHeld || document.hidden) current.pause();
       else playVideo(current);
@@ -801,6 +808,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     select(index);
     foldThenDock(() =>
       whenFrameReady(clones.get(index), () => {
+        root.setAttribute(CUT, "");
         release();
         reveal(index);
       }),
@@ -880,7 +888,8 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     stage.style.removeProperty("--ts2026-marquee-aspect");
     delete root.dataset.ts2026MarqueeReady;
     delete root.dataset.ts2026MarqueeActive;
-    root.removeAttribute("data-ts2026-marquee-dim");
+    root.removeAttribute(DIM);
+    root.removeAttribute(CUT);
   };
 }
 
