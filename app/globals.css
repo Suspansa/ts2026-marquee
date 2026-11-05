@@ -379,10 +379,12 @@
   transition: background-color 0.6s ease, -webkit-backdrop-filter 0.6s ease, backdrop-filter 0.6s ease;
 }
 
+/* Matched to the Figma frame: a light blue-grey veil and a blur that scales with the window (~4px at 1106px wide),
+   so the slide's layout and accents still read through it. */
 #ts2026-marquee[data-ts2026-marquee-dim] .marquee--center-image .image__wrapper::after {
-  background: rgb(222 232 242 / 0.55);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
+  background: rgb(128 175 212 / 0.3);
+  -webkit-backdrop-filter: blur(max(2px, 0.37cqw));
+  backdrop-filter: blur(max(2px, 0.37cqw));
 }
 
 #ts2026-marquee .ts2026-marquee-prompts {
