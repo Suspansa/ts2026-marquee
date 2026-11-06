@@ -78,16 +78,16 @@ export default function Home() {
                         <div className="video__wrapper">
 
                             <div className="video-html5 desktop-only">
-                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
+                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-poster.png?w=1024">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-2.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
                             <div className="video-html5 mobile-tablet-only">
-                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
+                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-poster-mobile.png?w=639">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-2.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-mobile.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -99,7 +99,7 @@ export default function Home() {
 
                                 <div className="display_caption
                                                 two_tone">
-                                    <p>How is ARR trending?</p>
+                                    <p>How is ARR trending? Show as a pie chart.</p>
 
                                 </div>
 
@@ -125,16 +125,16 @@ export default function Home() {
                         <div className="video__wrapper">
 
                             <div className="video-html5 desktop-only">
-                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
+                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-poster.png?w=1024">
 
                                     <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-2.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
                             <div className="video-html5 mobile-tablet-only">
-                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
+                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-poster-mobile.png?w=639">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-2.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -172,16 +172,16 @@ export default function Home() {
                         <div className="video__wrapper">
 
                             <div className="video-html5 desktop-only">
-                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
+                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-poster.png?w=1024">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-3.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
                             <div className="video-html5 mobile-tablet-only">
-                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/tableau-studio-2026-marquee.jpg?w=1024">
+                                <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-poster-mobile.png?w=639">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-3.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-mobile.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -193,7 +193,7 @@ export default function Home() {
 
                                 <div className="display_caption
                                                 two_tone">
-                                    <p>Visualize our revenue on a globe</p>
+                                    <p>Create an interactive data app for global revenue.</p>
 
                                 </div>
 

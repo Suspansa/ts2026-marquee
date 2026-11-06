@@ -500,6 +500,12 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     stage.append(clone);
   }
 
+  // The window chrome laid over every slide, so the menu bar and sidebar stay crisp and identical across the
+  // hero still and the videos.
+  const chrome = el("div", `${PREFIX}__chrome`);
+  chrome.setAttribute("aria-hidden", "true");
+  stage.append(chrome);
+
   const ctaHref = options.ctaHref || hero.querySelector<HTMLAnchorElement>("a.cta_button[href]")?.href || "#";
   const { card, box, composer, panel, hint, hintText, counter, buttons } = buildCard(slides, options, ctaHref);
 
@@ -885,6 +891,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
       clone.remove();
     }
     card.remove();
+    chrome.remove();
     heroMedia?.removeAttribute("data-ts2026-marquee-slide");
     heroMedia?.removeAttribute(ACTIVE);
     stage.style.removeProperty("--ts2026-marquee-aspect");

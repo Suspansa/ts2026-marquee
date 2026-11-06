@@ -393,6 +393,29 @@
   transition: none;
 }
 
+/* The window chrome, laid over every slide so the menu bar and sidebar stay crisp and identical across the hero
+   still and the videos. Cut from the 2130×1336 hero: a 68px bar across the top and an 80px rail beneath it. */
+#ts2026-marquee .ts2026-marquee-prompts__chrome {
+  --chrome-top-h: calc(100cqw * 68 / 2130);
+  --chrome-side-w: calc(100cqw * 80 / 2130);
+  grid-area: 1 / 1;
+  align-self: stretch;
+  justify-self: stretch;
+  z-index: 1;
+  border-radius: var(--marquee-window-radius);
+  background:
+    url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-top-bar.png") left top / 100% auto no-repeat,
+    url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-side-bar.png") left top var(--chrome-top-h) / var(--chrome-side-w) auto no-repeat;
+  pointer-events: none;
+}
+
+/* The phone window has no sidebar: only the menu bar, cut from the 654-wide mobile design. */
+@media (max-width: 767px) {
+  #ts2026-marquee .ts2026-marquee-prompts__chrome {
+    background: url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-top-bar-mobile.png") left top / 100% auto no-repeat;
+  }
+}
+
 #ts2026-marquee .ts2026-marquee-prompts {
   --prompts-pill-y: 33.96cqw;
   --prompts-pill-h: 48px;
