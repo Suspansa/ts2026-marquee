@@ -962,7 +962,7 @@
   font-size: 14px;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
 }
 
 #ts2026-marquee .ts2026-marquee-prompts__prompt {
@@ -1190,6 +1190,21 @@
 
 #ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored:hover .ts2026-marquee-prompts__arrow {
   color: var(--marquee-card-accent);
+}
+
+/* Explored prompts read as done: flat grey, no glowing border. */
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored {
+  border-color: #e6e8eb;
+  color: #6b7178;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored::before {
+  content: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored:hover {
+  border-color: #d9dde2;
+  color: var(--marquee-card-text);
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
