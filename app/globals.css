@@ -192,6 +192,8 @@
 }
 
 #ts2026-marquee .marquee--blade.marquee--center-image {
+  /* Paint above the footnote blade that follows: the docked hint hangs below the frame. */
+  z-index: 1;
   overflow: clip visible;
 }
 
@@ -351,7 +353,8 @@
   object-fit: cover;
   border-radius: var(--marquee-window-radius);
   box-shadow: 0 0 0 1px rgb(255 255 255 / 0.85);
-  background: #000;
+  /* Shows wherever a video has no frame yet: white, like the app UI in the videos, so a late frame never flashes black. */
+  background: #fff;
 }
 
 /* Slides swap with a hard cut, no fade: a crossfade leaves both slides half-transparent mid-way and the page
@@ -425,7 +428,7 @@
 }
 
 /* Once the active video goes full-bleed (slide 3's globe dashboard), the chrome fades off it; it snaps back
-   without a fade when the video wraps or another slide cuts in. */
+   without a fade when the video wraps or another slide cuts in. Phones keep it on (the script never sets this). */
 #ts2026-marquee[data-ts2026-marquee-chrome-out] .ts2026-marquee-prompts__chrome {
   opacity: 0;
   transition: opacity 0.25s ease;
@@ -1446,6 +1449,13 @@
   text-align: center;
 }
 
+/* The docked hint hangs below the frame (23px on tablet); keep the footnote clear of it.
+   Phones keep a fixed 24px gap to the frame. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #ts2026-marquee #ts2026-marquee-text {
+    margin-top: 20px;
+  }
+}
 @media (max-width: 767px) {
   #ts2026-marquee #ts2026-marquee-text {
     margin-top: 24px;

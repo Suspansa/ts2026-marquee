@@ -1,0 +1,1465 @@
+/* ts2026 marquee — built from app/globals.css by scripts/build-dist.mjs. Needs the site's global (pbc) styles loaded first. */
+/* Background gradients per breakpoint (formerly marquee-bg.css). */
+#ts2026-marquee {
+  --marquee-bg-desktop: url("data:image/svg+xml,%3Csvg%20width%3D%221440%22%20height%3D%221106%22%20viewBox%3D%220%200%201440%201106%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cmask%20id%3D%22mask0_637_6357%22%20style%3D%22mask-type%3Aalpha%22%20maskUnits%3D%22userSpaceOnUse%22%20x%3D%220%22%20y%3D%220%22%20width%3D%221440%22%20height%3D%221106%22%3E%3CforeignObject%20x%3D%220%22%20y%3D%220%22%20width%3D%220%22%20height%3D%220%22%3E%3Cdiv%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F1999%2Fxhtml%22%20style%3D%22backdrop-filter%3Ablur(59.3px)%3Bclip-path%3Aurl(%23bgblur_0_637_6357_clip_path)%3Bheight%3A100%25%3Bwidth%3A100%25%22%3E%3C%2Fdiv%3E%3C%2FforeignObject%3E%3Cpath%20data-figma-bg-blur-radius%3D%22118.597%22%20d%3D%22M1440%201106C1208%201055.46%20967.102%201028.83%20720%201028.83C472.898%201028.83%20231.999%201055.46%200%201106V0H1440V1106Z%22%20fill%3D%22url(%23paint0_linear_637_6357)%22%2F%3E%3C%2Fmask%3E%3Cg%20mask%3D%22url(%23mask0_637_6357)%22%3E%3Cpath%20d%3D%22M1440%201106C1208%201055.46%20967.102%201028.83%20720%201028.83C472.898%201028.83%20231.999%201055.46%200%201106V0H1440V1106Z%22%20fill%3D%22url(%23paint1_linear_637_6357)%22%2F%3E%3C%2Fg%3E%3Cdefs%3E%3CclipPath%20id%3D%22bgblur_0_637_6357_clip_path%22%20transform%3D%22translate(0%200)%22%3E%3Cpath%20d%3D%22M1440%201106C1208%201055.46%20967.102%201028.83%20720%201028.83C472.898%201028.83%20231.999%201055.46%200%201106V0H1440V1106Z%22%2F%3E%3C%2FclipPath%3E%3ClinearGradient%20id%3D%22paint0_linear_637_6357%22%20x1%3D%22387%22%20y1%3D%22-117%22%20x2%3D%22713%22%20y2%3D%221119%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.352126%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.8%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22paint1_linear_637_6357%22%20x1%3D%22294.851%22%20y1%3D%22-66.9649%22%20x2%3D%22803.5%22%20y2%3D%221061%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.111111%22%20stop-color%3D%22%23002A75%22%2F%3E%3Cstop%20offset%3D%220.222222%22%20stop-color%3D%22%23002D9B%22%2F%3E%3Cstop%20offset%3D%220.333333%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.444444%22%20stop-color%3D%22%230140D5%22%2F%3E%3Cstop%20offset%3D%220.555556%22%20stop-color%3D%22%230255EA%22%2F%3E%3Cstop%20offset%3D%220.666667%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%220.777778%22%20stop-color%3D%22%230086FF%22%2F%3E%3Cstop%20offset%3D%220.888889%22%20stop-color%3D%22%23009EFF%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3C%2Fsvg%3E");
+  --marquee-bg-2k: url("data:image/svg+xml,%3Csvg%20width%3D%222560%22%20height%3D%221300%22%20viewBox%3D%220%200%202560%201300%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cmask%20id%3D%22mask0_2003_899%22%20style%3D%22mask-type%3Aalpha%22%20maskUnits%3D%22userSpaceOnUse%22%20x%3D%220%22%20y%3D%22-140%22%20width%3D%222560%22%20height%3D%221440%22%3E%3Cpath%20d%3D%22M2560%201300C2147.56%201210.15%201719.29%201162.82%201280%201162.82C840.707%201162.82%20412.443%201210.15%200%201300V-140C412.443%20-50.1482%20840.707%20-2.81641%201280%20-2.81641C1719.29%20-2.81641%202147.56%20-50.1482%202560%20-140V1300Z%22%20fill%3D%22url(%23paint0_linear_2003_899)%22%2F%3E%3C%2Fmask%3E%3Cg%20mask%3D%22url(%23mask0_2003_899)%22%3E%3Cpath%20d%3D%22M2560%201966.22C2147.56%201876.37%201719.29%201829.04%201280%201829.04C840.707%201829.04%20412.443%201876.37%200%201966.22V0H2560V1966.22Z%22%20fill%3D%22url(%23paint1_linear_2003_899)%22%2F%3E%3C%2Fg%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22paint0_linear_2003_899%22%20x1%3D%22688%22%20y1%3D%22-208%22%20x2%3D%221267.56%22%20y2%3D%221989.33%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.352126%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.8%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22paint1_linear_2003_899%22%20x1%3D%22524.18%22%20y1%3D%22-119.049%22%20x2%3D%221428.44%22%20y2%3D%221886.22%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.111111%22%20stop-color%3D%22%23002A75%22%2F%3E%3Cstop%20offset%3D%220.222222%22%20stop-color%3D%22%23002D9B%22%2F%3E%3Cstop%20offset%3D%220.333333%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.444444%22%20stop-color%3D%22%230140D5%22%2F%3E%3Cstop%20offset%3D%220.555556%22%20stop-color%3D%22%230255EA%22%2F%3E%3Cstop%20offset%3D%220.666667%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%220.777778%22%20stop-color%3D%22%230086FF%22%2F%3E%3Cstop%20offset%3D%220.888889%22%20stop-color%3D%22%23009EFF%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3C%2Fsvg%3E");
+  --marquee-bg-tablet: url("data:image/svg+xml,%3Csvg%20width%3D%22768%22%20height%3D%221306%22%20viewBox%3D%220%200%20768%201306%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cmask%20id%3D%22mask0_637_6986%22%20style%3D%22mask-type%3Aalpha%22%20maskUnits%3D%22userSpaceOnUse%22%20x%3D%220%22%20y%3D%220%22%20width%3D%22768%22%20height%3D%221306%22%3E%3Cpath%20d%3D%22M768%201306C644.267%201279.04%20515.788%201264.85%20384%201264.85C252.212%201264.85%20123.733%201279.04%200%201306V0H768V1306Z%22%20fill%3D%22url(%23paint0_linear_637_6986)%22%2F%3E%3C%2Fmask%3E%3Cg%20mask%3D%22url(%23mask0_637_6986)%22%3E%3Cpath%20d%3D%22M768%201325H0V0H768V1325Z%22%20fill%3D%22url(%23paint1_linear_637_6986)%22%2F%3E%3C%2Fg%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22paint0_linear_637_6986%22%20x1%3D%22206.4%22%20y1%3D%22-62.4%22%20x2%3D%22380.266%22%20y2%3D%22596.8%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.352126%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.8%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22paint1_linear_637_6986%22%20x1%3D%22157.254%22%20y1%3D%22-35.7146%22%20x2%3D%22535.499%22%20y2%3D%221007.5%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.111111%22%20stop-color%3D%22%23002A75%22%2F%3E%3Cstop%20offset%3D%220.222222%22%20stop-color%3D%22%23002D9B%22%2F%3E%3Cstop%20offset%3D%220.333333%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.444444%22%20stop-color%3D%22%230140D5%22%2F%3E%3Cstop%20offset%3D%220.555556%22%20stop-color%3D%22%230255EA%22%2F%3E%3Cstop%20offset%3D%220.666667%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%220.777778%22%20stop-color%3D%22%230086FF%22%2F%3E%3Cstop%20offset%3D%220.888889%22%20stop-color%3D%22%23009EFF%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3C%2Fsvg%3E");
+  --marquee-bg-mobile: url("data:image/svg+xml,%3Csvg%20width%3D%22375%22%20height%3D%221064%22%20viewBox%3D%220%200%20375%201064%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cmask%20id%3D%22mask0_541_17670%22%20style%3D%22mask-type%3Aalpha%22%20maskUnits%3D%22userSpaceOnUse%22%20x%3D%220%22%20y%3D%220%22%20width%3D%22376%22%20height%3D%221064%22%3E%3Cpath%20d%3D%22M375%20856.002C375.003%20856.001%20375.007%20856.001%20375.01%20856V1064C314.593%201051.02%20251.859%201044.18%20187.51%201044.18C123.16%201044.18%2060.4263%201051.02%200.00976562%201064V878H0V0H375V856.002Z%22%20fill%3D%22url(%23paint0_linear_541_17670)%22%2F%3E%3C%2Fmask%3E%3Cg%20mask%3D%22url(%23mask0_541_17670)%22%3E%3Crect%20width%3D%22375%22%20height%3D%221096%22%20fill%3D%22url(%23paint1_linear_541_17670)%22%2F%3E%3C%2Fg%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22paint0_linear_541_17670%22%20x1%3D%22391.117%22%20y1%3D%22-117%22%20x2%3D%22714.133%22%20y2%3D%221120.68%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.352126%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.8%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3ClinearGradient%20id%3D%22paint1_linear_541_17670%22%20x1%3D%2276.7842%22%20y1%3D%22-66.3594%22%20x2%3D%22661.918%22%20y2%3D%22274.634%22%20gradientUnits%3D%22userSpaceOnUse%22%3E%3Cstop%20stop-color%3D%22%2303234D%22%2F%3E%3Cstop%20offset%3D%220.111111%22%20stop-color%3D%22%23002A75%22%2F%3E%3Cstop%20offset%3D%220.222222%22%20stop-color%3D%22%23002D9B%22%2F%3E%3Cstop%20offset%3D%220.333333%22%20stop-color%3D%22%23022AC0%22%2F%3E%3Cstop%20offset%3D%220.444444%22%20stop-color%3D%22%230140D5%22%2F%3E%3Cstop%20offset%3D%220.555556%22%20stop-color%3D%22%230255EA%22%2F%3E%3Cstop%20offset%3D%220.666667%22%20stop-color%3D%22%23066AFE%22%2F%3E%3Cstop%20offset%3D%220.777778%22%20stop-color%3D%22%230086FF%22%2F%3E%3Cstop%20offset%3D%220.888889%22%20stop-color%3D%22%23009EFF%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22%2300B3FF%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3C%2Fsvg%3E");
+}
+
+
+#ts2026-marquee {
+  --marquee-curve-cut: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 77.17' preserveAspectRatio='none'%3E%3Cpath d='M0 0H1440V77.17C1208 26.63 967.1 0 720 0C472.9 0 232 26.63 0 77.17Z'/%3E%3C/svg%3E");
+  --marquee-curve-h: 5.36vw;
+  --marquee-bg: var(--marquee-bg-desktop);
+  --marquee-window-overlap: 48px;
+  --marquee-window-width: 1132px;
+  --marquee-frame-pad: 13px;
+  --marquee-frame-radius: 20px;
+  --marquee-window-radius: 14px;
+  --marquee-hero-pad-top: 72px;
+  position: relative;
+  overflow-x: clip;
+}
+
+@media (max-width: 1023px) {
+  #ts2026-marquee {
+    --marquee-bg: var(--marquee-bg-mobile);
+    --marquee-window-overlap: 24px;
+    --marquee-frame-pad: 8px;
+    --marquee-frame-radius: 20px;
+    --marquee-window-radius: 16px;
+    --marquee-hero-pad-top: 48px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  #ts2026-marquee {
+    --marquee-bg: var(--marquee-bg-tablet);
+    --marquee-frame-pad: 9px;
+    --marquee-frame-radius: 16px;
+    --marquee-window-radius: 12px;
+    --marquee-hero-pad-top: 64px;
+  }
+}
+
+@media (min-width: 2560px) {
+  #ts2026-marquee {
+    --marquee-bg: var(--marquee-bg-2k);
+    --marquee-window-width: 1412px;
+  }
+}
+
+#ts2026-marquee .marquee--blade {
+  --pbc-g-text-display-color: #fff;
+  --pbc-g-text-body-color: #fff;
+  --pbc-focus-state-color: #fff;
+  position: relative;
+  isolation: isolate;
+}
+
+#ts2026-marquee .marquee--blade::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--marquee-bg) center top / cover no-repeat;
+  -webkit-mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--marquee-curve-h) + 1px) no-repeat,
+    var(--marquee-curve-cut) bottom / 100% var(--marquee-curve-h) no-repeat;
+  mask:
+    linear-gradient(#000 0 0) top / 100% calc(100% - var(--marquee-curve-h) + 1px) no-repeat,
+    var(--marquee-curve-cut) bottom / 100% var(--marquee-curve-h) no-repeat;
+  pointer-events: none;
+}
+
+/* Soft pills over the gradient; the script draws one set per breakpoint and nudges them with the mouse. */
+#ts2026-marquee .ts2026-marquee-blobs {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+#ts2026-marquee .ts2026-marquee-blobs__set {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+}
+
+#ts2026-marquee .ts2026-marquee-blobs__set[data-set="desktop"] {
+  display: block;
+}
+
+@media (max-width: 1023px) {
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="desktop"] {
+    display: none;
+  }
+
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="mobile"] {
+    display: block;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="mobile"] {
+    display: none;
+  }
+
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="tablet"] {
+    display: block;
+  }
+}
+
+@media (min-width: 2560px) {
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="desktop"] {
+    display: none;
+  }
+
+  #ts2026-marquee .ts2026-marquee-blobs__set[data-set="2k"] {
+    display: block;
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-blobs__blob {
+  --ts2026-marquee-blob-shift: calc(var(--ts2026-marquee-blob-depth, 1) * var(--ts2026-marquee-blob-amp, 0px));
+  transform: translate(
+    calc(var(--ts2026-marquee-blob-x, 0) * var(--ts2026-marquee-blob-shift)),
+    calc(var(--ts2026-marquee-blob-y, 0) * var(--ts2026-marquee-blob-shift) * 0.6)
+  );
+}
+
+#ts2026-marquee .marquee--blade > .container {
+  padding-top: var(--marquee-hero-pad-top);
+  padding-bottom: max(0px, calc(var(--marquee-curve-h) - var(--marquee-window-overlap)));
+}
+
+#ts2026-marquee .marquee--blade .grid_main {
+  row-gap: 70px;
+}
+
+#ts2026-marquee .marquee--blade .headline.marquee__headline--standard {
+  font-size: min(80px, 5.556vw);
+  line-height: 1.1;
+  letter-spacing: -0.19px;
+}
+
+#ts2026-marquee .marquee--blade .blade__description {
+  max-width: 826px;
+  margin-inline: auto;
+  letter-spacing: 0.02px;
+  margin-top: 15px;
+}
+
+#ts2026-marquee .marquee--blade .marquee__blade-heading {
+  margin-bottom: 40px;
+}
+
+#ts2026-marquee .marquee--blade {
+  --sds-c-button-primary-text-color: #001e5b;
+  --sds-c-button-primary-text-color-hover: #001e5b;
+  --sds-c-button-primary-text-color-focus: #001e5b;
+  --sds-c-button-primary-text-color-active: #001e5b;
+  --sds-c-button-primary-color-background: #fff;
+  --sds-c-button-primary-color-background-hover: #f3f3f3;
+  --sds-c-button-primary-color-background-focus: #f3f3f3;
+  --sds-c-button-primary-color-background-active: #e6e6e6;
+  --sds-c-button-primary-color-border: #fff;
+  --sds-c-button-primary-color-border-hover: #f3f3f3;
+  --sds-c-button-primary-color-border-focus: #f3f3f3;
+  --sds-c-button-primary-color-border-active: #e6e6e6;
+}
+
+#ts2026-marquee .marquee--blade a.cta_button[data-variant="primary"] {
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+#ts2026-marquee .marquee--center-image .image__wrapper {
+  position: relative;
+  z-index: 1;
+  grid-column: 1 / -1;
+  justify-self: center;
+  box-sizing: border-box;
+  width: min(100%, var(--marquee-window-width));
+  padding: var(--marquee-frame-pad);
+  border: 0;
+  border-radius: var(--marquee-frame-radius);
+  background: rgb(110 173 255 / 0.32);
+  box-shadow: 0 12px 24px rgb(40 120 235 / 0.2);
+  overflow: visible;
+}
+
+#ts2026-marquee .marquee--blade.marquee--center-image {
+  /* Paint above the footnote blade that follows: the docked hint hangs below the frame. */
+  z-index: 1;
+  overflow: clip visible;
+}
+
+#ts2026-marquee .marquee--center-image .image__wrapper::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: linear-gradient(304deg, rgb(255 255 255 / 0.1) 18%, rgb(255 255 255 / 0.2) 84%, rgb(255 255 255 / 0.8) 97%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+#ts2026-marquee .marquee--center-image .image__asset {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--marquee-window-radius);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.85);
+}
+
+@media (min-width: 1440px) {
+  #ts2026-marquee .marquee--blade .headline.marquee__headline--standard {
+    font-size: 80px;
+    line-height: 88px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  #ts2026-marquee .marquee--blade .headline.marquee__headline--standard {
+    font-size: 56px;
+    line-height: 64px;
+  }
+  #ts2026-marquee .marquee--blade .blade__description {
+    font-size: 18px;
+    line-height: 28px;
+  }
+  #ts2026-marquee .marquee--blade .marquee__blade-heading {
+    margin-bottom: 48px;
+  }
+}
+
+@media (max-width: 767px) {
+  #ts2026-marquee .marquee--blade .headline.marquee__headline--standard {
+    font-size: 40px;
+    line-height: 48px;
+    letter-spacing: -0.13px;
+  }
+  #ts2026-marquee .marquee--blade .blade__description {
+    font-size: 18px;
+    line-height: 28px;
+    margin-top: 16px;
+  }
+  #ts2026-marquee .marquee--blade .marquee__blade-heading {
+    margin-bottom: 32px;
+  }
+}
+
+#ts2026-marquee [id^="ts2026-marquee-video-"],
+#ts2026-marquee #ts2026-marquee-dropdown-btn {
+  display: none;
+}
+
+#ts2026-marquee {
+  --marquee-card-radius: 24px;
+  --marquee-card-inset: 16px;
+  --marquee-card-text: #181818;
+  --marquee-card-muted: #5c5c5c;
+  --marquee-card-line: #e5e5e5;
+  --marquee-card-shadow: 0 0 0 1px var(--marquee-card-line), 0 8px 24px rgb(0 30 91 / 0.08), 0 2px 6px rgb(0 30 91 / 0.04);
+  --marquee-card-accent: #2b73ff;
+  --marquee-card-accent-soft: #e6f1ff;
+  --marquee-card-font: "Salesforce Sans", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --marquee-greeting-color: #0e2a5b;
+  --marquee-pill-stroke: #2e68f5;
+  --marquee-pill-stroke-soft: #66a5f8;
+  --marquee-pill-button: #24557d;
+  --marquee-pill-button-open: #9fb3c8;
+  --marquee-unfold: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  --marquee-glow-lap: 4s;
+  --marquee-glow-ease: cubic-bezier(0.2, 0.5, 0.8, 0.5);
+  --marquee-glow-step: 400ms;
+  --marquee-glow-sky: #a6e2ff;
+  --marquee-glow-mid: #5aa0ff;
+  --marquee-glow-blue: #2e68f5;
+}
+
+@property --ts2026-glow-a {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: -90deg;
+}
+
+@keyframes ts2026-marquee-glow-spin {
+  0% {
+    --ts2026-glow-a: -90deg;
+  }
+  50% {
+    --ts2026-glow-a: 90deg;
+  }
+  100% {
+    --ts2026-glow-a: 270deg;
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__box::before,
+#ts2026-marquee .ts2026-marquee-prompts__box::after,
+#ts2026-marquee .ts2026-marquee-prompts__prompt::before {
+  content: "";
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--ts2026-glow-a),
+    rgb(166 226 255 / 0) 0deg,
+    rgb(166 226 255 / 0.1) 15deg,
+    rgb(166 226 255 / 0.3) 35deg,
+    rgb(166 226 255 / 0.6) 60deg,
+    var(--marquee-glow-sky) 90deg,
+    var(--marquee-glow-mid) 120deg,
+    var(--marquee-glow-blue) 150deg,
+    var(--marquee-glow-blue) 210deg,
+    var(--marquee-glow-mid) 240deg,
+    var(--marquee-glow-sky) 270deg,
+    rgb(166 226 255 / 0.6) 300deg,
+    rgb(166 226 255 / 0.3) 325deg,
+    rgb(166 226 255 / 0.1) 345deg,
+    rgb(166 226 255 / 0) 360deg
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  animation: ts2026-marquee-glow-spin var(--marquee-glow-lap) var(--marquee-glow-ease) infinite;
+}
+
+#ts2026-marquee .marquee--center-image .image__wrapper {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  container-type: inline-size;
+}
+
+#ts2026-marquee .marquee--center-image .image__wrapper > .image__asset,
+#ts2026-marquee .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media {
+  grid-area: 1 / 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: var(--ts2026-marquee-aspect, auto);
+  object-fit: cover;
+  border-radius: var(--marquee-window-radius);
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.85);
+  /* Shows wherever a video has no frame yet: white, like the app UI in the videos, so a late frame never flashes black. */
+  background: #fff;
+}
+
+/* Slides swap with a hard cut, no fade: a crossfade leaves both slides half-transparent mid-way and the page
+   shows through as a flash. */
+#ts2026-marquee[data-ts2026-marquee-ready] .image__wrapper > :is(.image__asset, .ts2026-marquee-prompts__media):not([data-ts2026-marquee-active]) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* The slide being cut to sits over the outgoing one, which stays visible underneath until the new frame is on screen.
+   It drops its black backdrop meanwhile, so a frame that lands a beat late shows the old slide rather than black. */
+#ts2026-marquee .marquee--center-image .image__wrapper > [data-ts2026-marquee-entering] {
+  z-index: 1;
+  background: none;
+}
+
+#ts2026-marquee .image__wrapper > video.ts2026-marquee-prompts__media {
+  object-position: center;
+}
+
+#ts2026-marquee .marquee--center-image .image__wrapper::after {
+  content: "";
+  display: block;
+  grid-area: 1 / 1;
+  align-self: stretch;
+  justify-self: stretch;
+  z-index: 1;
+  border-radius: var(--marquee-window-radius);
+  background: rgb(222 232 242 / 0);
+  -webkit-backdrop-filter: blur(0px);
+  backdrop-filter: blur(0px);
+  pointer-events: none;
+  transition: background-color 0.6s ease, -webkit-backdrop-filter 0.6s ease, backdrop-filter 0.6s ease;
+}
+
+/* Matched to the Figma frame: a light blue-grey veil and a blur that scales with the window (~4px at 1106px wide),
+   so the slide's layout and accents still read through it. */
+#ts2026-marquee[data-ts2026-marquee-dim] .marquee--center-image .image__wrapper::after {
+  background: rgb(128 175 212 / 0.3);
+  -webkit-backdrop-filter: blur(max(2px, 0.37cqw));
+  backdrop-filter: blur(max(2px, 0.37cqw));
+}
+
+/* A slide change has no fade: the veil stays on the outgoing slide and drops in the same frame as the cut. */
+#ts2026-marquee[data-ts2026-marquee-cut] .marquee--center-image .image__wrapper::after {
+  transition: none;
+}
+
+/* The window chrome, laid over every slide so the menu bar and sidebar stay crisp and identical across the hero
+   still and the videos. Cut from the 2130×1336 hero: a 68px bar across the top and an 80px rail beneath it. */
+#ts2026-marquee .ts2026-marquee-prompts__chrome {
+  --chrome-top-h: calc(100cqw * 68 / 2130);
+  --chrome-side-w: calc(100cqw * 80 / 2130);
+  grid-area: 1 / 1;
+  align-self: stretch;
+  justify-self: stretch;
+  z-index: 1;
+  border-radius: var(--marquee-window-radius);
+  background:
+    url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-top-bar.png") left top / 100% auto no-repeat,
+    url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-side-bar.png") left top var(--chrome-top-h) / var(--chrome-side-w) auto no-repeat;
+  pointer-events: none;
+}
+
+/* The phone window has no sidebar: only the menu bar, cut from the 654-wide mobile design. */
+@media (max-width: 767px) {
+  #ts2026-marquee .ts2026-marquee-prompts__chrome {
+    background: url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-top-bar-mobile.png") left top / 100% auto no-repeat;
+  }
+}
+
+/* Once the active video goes full-bleed (slide 3's globe dashboard), the chrome fades off it; it snaps back
+   without a fade when the video wraps or another slide cuts in. Phones keep it on (the script never sets this). */
+#ts2026-marquee[data-ts2026-marquee-chrome-out] .ts2026-marquee-prompts__chrome {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts {
+  --prompts-pill-y: 33.96cqw;
+  --prompts-pill-h: 48px;
+  --prompts-open-h: 60px;
+  --prompts-pill-w: round(min(max(41.6cqw, 440px), 100%), 2px);
+  --prompts-add-size: round(calc(var(--prompts-pill-h) * 0.58), 1px);
+  --prompts-add-gap: round(calc(var(--prompts-pill-h) * 0.22), 1px);
+  --prompts-add-inset: calc((var(--prompts-pill-h) - var(--prompts-add-size)) / 2);
+  --prompts-dock-open-extra: calc(var(--marquee-card-inset) - var(--prompts-add-inset));
+  --prompts-pill-bottom: max(2.6cqw, 24px);
+  position: absolute;
+  inset: var(--marquee-frame-pad);
+  z-index: 2;
+  margin: 0;
+  pointer-events: none;
+  color: var(--marquee-card-text);
+  font-family: var(--marquee-card-font);
+  font-size: 16px;
+  line-height: 1.3;
+  text-align: left;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__box {
+  position: absolute;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  top: calc(var(--prompts-pill-y) - var(--prompts-pill-h) / 2);
+  box-sizing: border-box;
+  width: var(--prompts-pill-w);
+  transform: translateX(-50%);
+  pointer-events: auto;
+  isolation: isolate;
+  border-radius: calc(var(--prompts-pill-h) / 2);
+  background: #fff;
+  box-shadow: 0 10px 28px rgb(140 196 255 / 0.55), 0 1px 3px rgb(0 30 91 / 0.06);
+  translate: 0 0;
+  transition: border-radius var(--marquee-unfold), box-shadow var(--marquee-unfold), translate var(--marquee-unfold);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__box {
+  top: auto;
+  bottom: var(--prompts-pill-bottom);
+  flex-direction: column-reverse;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-teaser][data-state="collapsed"] .ts2026-marquee-prompts__box::before {
+  opacity: 1;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-teaser][data-state="collapsed"] .ts2026-marquee-prompts__box {
+  border-radius: var(--marquee-card-radius);
+  box-shadow: var(--marquee-card-shadow);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__box::before {
+  inset: 0;
+  z-index: 1;
+  padding: 2px;
+  transition: opacity var(--marquee-unfold);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__box::after {
+  --glow-halo: 3px;
+  inset: calc(-1 * var(--glow-halo));
+  z-index: -1;
+  padding: var(--glow-halo);
+  border-radius: calc(var(--prompts-pill-h) / 2 + var(--glow-halo));
+  filter: blur(1.5px);
+  opacity: 0.15;
+  transition: opacity var(--marquee-unfold);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-teaser][data-state="collapsed"] .ts2026-marquee-prompts__box::after {
+  border-radius: calc(var(--marquee-card-radius) + var(--glow-halo));
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box::after {
+  opacity: 0;
+  animation: none;
+}
+
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="collapsed"] .ts2026-marquee-prompts__box:hover {
+  box-shadow: 0 12px 32px rgb(140 196 255 / 0.75), 0 1px 3px rgb(0 30 91 / 0.08);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box {
+  border-radius: var(--marquee-card-radius);
+  box-shadow: var(--marquee-card-shadow);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box::before {
+  opacity: 0;
+  animation: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-playing] .ts2026-marquee-prompts__box::before,
+#ts2026-marquee .ts2026-marquee-prompts[data-playing] .ts2026-marquee-prompts__box::after {
+  opacity: 0;
+  animation-play-state: paused;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"]:not([data-dock]) .ts2026-marquee-prompts__box {
+  translate: 0 calc(-1 * var(--prompts-lift, 0px));
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__composer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--prompts-pill-h);
+  margin: 0;
+  padding: 0 var(--prompts-add-gap) 0 round(calc(var(--prompts-pill-h) * 0.42), 1px);
+  border: 0;
+  border-radius: inherit;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: height var(--marquee-unfold), padding var(--marquee-unfold);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__composer:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(43 115 255 / 0.3);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"]:not([data-dock]) .ts2026-marquee-prompts__composer {
+  height: var(--prompts-open-h);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"][data-teaser] .ts2026-marquee-prompts__composer {
+  height: calc(var(--prompts-pill-h) + var(--prompts-dock-open-extra));
+  padding-bottom: var(--prompts-dock-open-extra);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"][data-teaser] .ts2026-marquee-prompts__box {
+  translate: 0 var(--prompts-dock-open-extra);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__placeholder {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: #8a8a8a;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__add {
+  position: relative;
+  isolation: isolate;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: var(--prompts-add-size);
+  height: var(--prompts-add-size);
+  border-radius: 50%;
+  background: var(--marquee-pill-button);
+  color: #fff;
+  transition: background-color var(--marquee-unfold), scale var(--marquee-unfold);
+  will-change: scale;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__add {
+  scale: 1.1;
+  background: var(--marquee-pill-button-open);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__ring {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgb(43 115 255 / 0.45);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring {
+  animation: ts2026-marquee-pulse 3.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:nth-of-type(2) {
+  animation-delay: 1.2s;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:nth-of-type(3) {
+  animation-delay: 2.4s;
+}
+
+@keyframes ts2026-marquee-pulse {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  75% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__hint {
+  --hint-r: 8px;
+  --hint-b: 1.5px;
+  --hint-stroke: rgb(197 210 242 / 0.5);
+  --hint-fill: rgb(234 241 253 / 0.2);
+  --hint-tip: 11px;
+  --hint-tip-w: calc(var(--hint-tip) * 1.4142);
+  --hint-tip-h: calc(var(--hint-tip) * 0.7071);
+  --hint-tip-fill: calc(var(--hint-tip-h) - 1px);
+  --hint-gap: calc(var(--hint-tip-w) - var(--hint-b) * 2.8284);
+  --hint-tip-p: 0.5;
+  --hint-tip-off: 0px;
+  --hint-tip-x: calc(var(--hint-tip-p) * 100% + var(--hint-tip-off));
+  --hint-flip: 1;
+  position: absolute;
+  right: calc(var(--prompts-add-gap) + var(--prompts-add-size) / 2);
+  bottom: calc(100% + 16px);
+  z-index: 3;
+  box-sizing: border-box;
+  padding: 11px 16px;
+  color: transparent;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  visibility: hidden;
+  transform: translate(50%, 6px);
+  transition: color 0.25s ease, transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s linear 0.3s;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__hint::before,
+#ts2026-marquee .ts2026-marquee-prompts__hint::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transform: scaleY(var(--hint-flip));
+  transition: opacity 0.25s ease;
+  mask-repeat: no-repeat;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__hint::before {
+  z-index: -1;
+  inset: calc(var(--hint-tip-h) * -1) 0;
+  background: var(--hint-fill);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  mask-image:
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0),
+    radial-gradient(circle at bottom right, #000 calc(var(--hint-r) - 0.5px), transparent calc(var(--hint-r) + 0.5px)),
+    radial-gradient(circle at bottom left, #000 calc(var(--hint-r) - 0.5px), transparent calc(var(--hint-r) + 0.5px)),
+    radial-gradient(circle at top right, #000 calc(var(--hint-r) - 0.5px), transparent calc(var(--hint-r) + 0.5px)),
+    radial-gradient(circle at top left, #000 calc(var(--hint-r) - 0.5px), transparent calc(var(--hint-r) + 0.5px)),
+    linear-gradient(to bottom left, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0);
+  mask-size:
+    100% calc(100% - (var(--hint-tip-h) + var(--hint-r)) * 2 + 2px),
+    calc(100% - var(--hint-r) * 2 + 2px) var(--hint-r),
+    calc(100% - var(--hint-r) * 2 + 2px) var(--hint-r),
+    var(--hint-r) var(--hint-r),
+    var(--hint-r) var(--hint-r),
+    var(--hint-r) var(--hint-r),
+    var(--hint-r) var(--hint-r),
+    var(--hint-tip-fill) var(--hint-tip-fill),
+    var(--hint-tip-fill) var(--hint-tip-fill),
+    2px calc(var(--hint-tip-h) - 1px),
+    calc(var(--hint-tip-fill) * 2 - 2px) 2px;
+  mask-position:
+    left 0 top calc(var(--hint-tip-h) + var(--hint-r) - 1px),
+    left calc(var(--hint-r) - 1px) top var(--hint-tip-h),
+    left calc(var(--hint-r) - 1px) bottom var(--hint-tip-h),
+    left 0 top var(--hint-tip-h),
+    right 0 top var(--hint-tip-h),
+    left 0 bottom var(--hint-tip-h),
+    right 0 bottom var(--hint-tip-h),
+    right calc(var(--hint-tip-x) + var(--hint-tip-p) * var(--hint-tip-fill)) bottom 1px,
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 1) * var(--hint-tip-fill)) bottom 1px,
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) * 2 - 1) * 1px) bottom 2px,
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 0.5) * (var(--hint-tip-fill) * 2 - 2px)) bottom calc(var(--hint-tip-h) - 1px);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__hint::after {
+  inset: 0;
+  box-sizing: border-box;
+  border: var(--hint-b) solid var(--hint-stroke);
+  border-radius: var(--hint-r);
+  box-shadow: 0 calc(8px * var(--hint-flip)) 20px rgb(0 30 91 / 0.12);
+  mask-clip: no-clip;
+  mask-composite: subtract, add, add, add;
+  mask-image:
+    linear-gradient(#000 0 0),
+    linear-gradient(#000 0 0),
+    linear-gradient(to bottom left, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px));
+  mask-size:
+    calc(100% + 80px) calc(100% + 80px),
+    var(--hint-gap) calc(var(--hint-b) + 0.5px),
+    var(--hint-tip-h) var(--hint-tip-h),
+    var(--hint-tip-h) var(--hint-tip-h);
+  mask-position:
+    -40px -40px,
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 0.5) * var(--hint-gap)) bottom 0,
+    right calc(var(--hint-tip-x) + var(--hint-tip-p) * var(--hint-tip-h)) bottom calc(var(--hint-tip-h) * -1),
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 1) * var(--hint-tip-h)) bottom calc(var(--hint-tip-h) * -1);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__hint-arrow {
+  position: absolute;
+  right: calc(var(--hint-tip-x) - var(--hint-tip-w) / 2);
+  bottom: calc(var(--hint-tip-h) * -1);
+  width: var(--hint-tip-w);
+  height: var(--hint-tip-h);
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__hint-arrow::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  box-sizing: border-box;
+  width: var(--hint-tip);
+  height: var(--hint-tip);
+  border: var(--hint-b) solid var(--hint-stroke);
+  border-top: 0;
+  border-left: 0;
+  border-bottom-right-radius: 2px;
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-hint] .ts2026-marquee-prompts__hint {
+  color: var(--marquee-greeting-color);
+  visibility: visible;
+  transform: translate(50%, 0);
+  transition: color 0.25s ease, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), visibility 0s;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-hint] .ts2026-marquee-prompts__hint::before,
+#ts2026-marquee .ts2026-marquee-prompts[data-hint] .ts2026-marquee-prompts__hint::after,
+#ts2026-marquee .ts2026-marquee-prompts[data-hint] .ts2026-marquee-prompts__hint-arrow {
+  opacity: 1;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__hint {
+  bottom: calc(100% + 4px);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-hint-open] .ts2026-marquee-prompts__hint {
+  --hint-tip-p: 0.5;
+  --hint-tip-off: 0px;
+  right: 50%;
+  transform: translate(50%, 6px);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-hint-open][data-hint] .ts2026-marquee-prompts__hint {
+  transform: translate(50%, 0);
+}
+
+@media (min-width: 1024px) {
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint {
+    --hint-flip: -1;
+    top: calc(100% + 16px);
+    bottom: auto;
+    transform: translate(50%, -6px);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below][data-hint] .ts2026-marquee-prompts__hint {
+    transform: translate(50%, 0);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint-arrow {
+    top: calc(var(--hint-tip-h) * -1);
+    bottom: auto;
+    transform: scaleY(-1);
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--marquee-unfold);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__panel-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 var(--marquee-card-inset);
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__panel {
+  grid-template-rows: 1fr;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__panel-inner {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.35s ease 0.12s, transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__panel-inner {
+  transform: translateY(8px);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"][data-state="expanded"] .ts2026-marquee-prompts__panel-inner {
+  transform: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__header {
+  padding-top: var(--marquee-card-inset);
+  border-top: 0;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__list {
+  padding-bottom: 14px;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--marquee-unfold);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 0 var(--marquee-card-inset);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-teaser] .ts2026-marquee-prompts__cta {
+  grid-template-rows: 1fr;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-teaser] .ts2026-marquee-prompts__cta-inner {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.35s ease 0.12s, transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) 0.12s;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-sizing: border-box;
+  min-height: 44px;
+  margin: var(--marquee-card-inset) 0 calc(var(--marquee-card-inset) - var(--prompts-add-inset));
+  padding: 10px 24px;
+  border-radius: 12px;
+  background: var(--marquee-card-accent);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta-link:hover {
+  background: #1f62ea;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta-link:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(43 115 255 / 0.35);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta-action svg {
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__cta-link:hover .ts2026-marquee-prompts__cta-action svg {
+  transform: translateX(2px);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0 10px;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__heading {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b6b6b;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__counter {
+  font-size: 12px;
+  color: var(--marquee-card-muted);
+  white-space: nowrap;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 20px;
+  list-style: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__item {
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__item {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.5s ease calc(0.2s + var(--ts2026-marquee-order, 0) * 0.12s),
+    transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) calc(0.2s + var(--ts2026-marquee-order, 0) * 0.12s);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  padding: 7px 9px;
+  border: 2px solid #00b3ff1a;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--marquee-card-text);
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt {
+  position: relative;
+  isolation: isolate;
+}
+
+@media (min-width: 1024px) {
+  #ts2026-marquee .ts2026-marquee-prompts__prompt {
+    min-height: 56px;
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt::before {
+  inset: -2px;
+  z-index: -1;
+  padding: 2px;
+  transition: opacity 0.25s ease;
+  animation-play-state: paused;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__prompt::before {
+  animation-play-state: running;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__item .ts2026-marquee-prompts__prompt::before {
+  animation-delay: calc(var(--marquee-glow-step) * var(--ts2026-glow-i, 0));
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__item:nth-child(2) { --ts2026-glow-i: 1; }
+#ts2026-marquee .ts2026-marquee-prompts__item:nth-child(3) { --ts2026-glow-i: 2; }
+#ts2026-marquee .ts2026-marquee-prompts__item:nth-child(4) { --ts2026-glow-i: 3; }
+#ts2026-marquee .ts2026-marquee-prompts__item:nth-child(5) { --ts2026-glow-i: 4; }
+#ts2026-marquee .ts2026-marquee-prompts__item:nth-child(6) { --ts2026-glow-i: 5; }
+#ts2026-marquee .ts2026-marquee-prompts__item:nth-child(7) { --ts2026-glow-i: 6; }
+#ts2026-marquee .ts2026-marquee-prompts__item:nth-child(n + 8) { --ts2026-glow-i: 7; }
+
+
+#ts2026-marquee .ts2026-marquee-prompts__list:has(.ts2026-marquee-prompts__prompt:hover) .ts2026-marquee-prompts__prompt:not(:hover)::before {
+  opacity: 0;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__list:has(.ts2026-marquee-prompts__prompt:hover) .ts2026-marquee-prompts__prompt:not(:hover) > * {
+  opacity: 0.4;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgb(43 115 255 / 0.3);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__icon,
+#ts2026-marquee .ts2026-marquee-prompts__arrow {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt > * {
+  transition: opacity 0.25s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__arrow svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__icon {
+  position: relative;
+  overflow: visible;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__icon svg {
+  position: absolute;
+  top: -5.7px;
+  left: -2.7px;
+  display: block;
+  width: 32px;
+  height: 32px;
+  overflow: visible;
+}
+
+#ts2026-marquee .ts2026-marquee-spark,
+#ts2026-marquee .ts2026-marquee-spark path {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+#ts2026-marquee .ts2026-marquee-spark--main {
+  transform: scale(0.75);
+  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#ts2026-marquee .ts2026-marquee-spark--echo {
+  opacity: 0;
+  transform: scale(0);
+  transition: opacity 0.25s ease, transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+#ts2026-marquee .ts2026-marquee-spark--low {
+  transition-delay: 0.08s;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-spark--main {
+  transform: scale(1);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-spark--echo {
+  opacity: 1;
+  transform: scale(1);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-spark--main path {
+  animation: ts2026-marquee-spark-shine-main 5.4s cubic-bezier(0.45, 0, 0.55, 1) 0.4s infinite;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-spark--top path {
+  animation: ts2026-marquee-spark-shine-top 4s cubic-bezier(0.45, 0, 0.55, 1) 0.1s infinite;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-spark--low path {
+  animation: ts2026-marquee-spark-shine-low 6.75s cubic-bezier(0.45, 0, 0.55, 1) -2.3s infinite;
+}
+
+@keyframes ts2026-marquee-spark-shine-top {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  40% {
+    opacity: 0.7;
+    transform: scale(0.92);
+  }
+  62% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+  82% {
+    opacity: 0.45;
+    transform: scale(0.72);
+  }
+}
+
+@keyframes ts2026-marquee-spark-shine-low {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.8);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  40% {
+    opacity: 0.7;
+    transform: scale(0.92);
+  }
+  62% {
+    opacity: 0.95;
+    transform: scale(1.05);
+  }
+  82% {
+    opacity: 0.45;
+    transform: scale(0.72);
+  }
+}
+
+@keyframes ts2026-marquee-spark-shine-main {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  55% {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ts2026-marquee .ts2026-marquee-spark--main,
+  #ts2026-marquee .ts2026-marquee-spark--echo {
+    transition: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-spark path {
+    animation: none;
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__arrow {
+  color: rgb(3 45 96 / 0.34);
+  transition: color 0.2s ease, transform 0.2s ease, opacity 0.25s ease;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt:hover .ts2026-marquee-prompts__arrow {
+  color: var(--marquee-card-accent);
+  transform: translate(1px, -1px);
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored .ts2026-marquee-prompts__arrow {
+  color: #a9b8c9;
+  transform: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored:hover .ts2026-marquee-prompts__arrow {
+  color: var(--marquee-card-accent);
+}
+
+/* Explored prompts read as done: flat grey, no glowing border. */
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored {
+  border-color: #e6e8eb;
+  color: #6b7178;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored::before {
+  content: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__prompt.is-explored:hover {
+  border-color: #d9dde2;
+  color: var(--marquee-card-text);
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  #ts2026-marquee {
+    --marquee-card-radius: 20px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__list {
+    gap: 8px;
+    padding-bottom: 16px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__header {
+    padding: 8px 0 10px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint {
+    --hint-flip: -1;
+    top: calc(100% + 16px);
+    bottom: auto;
+    transform: translate(50%, -6px);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below][data-hint] .ts2026-marquee-prompts__hint {
+    transform: translate(50%, 0);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint-arrow {
+    top: calc(var(--hint-tip-h) * -1);
+    bottom: auto;
+    transform: scaleY(-1);
+  }
+}
+
+@media (max-width: 767px) {
+  #ts2026-marquee {
+    --marquee-card-radius: 24px;
+    --marquee-card-inset: 12px;
+  }
+  #ts2026-marquee .marquee--blade .grid_main {
+    row-gap: 48px;
+  }
+  #ts2026-marquee .marquee--center-image .image__wrapper {
+    width: calc(100% + 2 * var(--marquee-frame-pad));
+  }
+  #ts2026-marquee .marquee--center-image .image__wrapper > .image__asset,
+  #ts2026-marquee .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media {
+    aspect-ratio: 5 / 8;
+  }
+  /* The hero still has an 80px sidebar on its left (3.8% of 2130), so "Good morning" sits at 51.9% of the
+     image, not 50%. The 5/8 crop shows 1/2.55 of the width: 53.1% lines that point up with the frame's centre. */
+  #ts2026-marquee .marquee--center-image .image__wrapper > img {
+    object-position: 53.1% 0;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts {
+    --prompts-pill-y: 86.67cqw;
+    --prompts-pill-h: 44px;
+    --prompts-open-h: var(--prompts-pill-h);
+    --prompts-pill-w: round(calc(100% - 20px), 2px);
+    --prompts-pill-bottom: calc(10px + var(--prompts-dock-open-extra));
+    --prompts-add-size: 24px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-state="expanded"] .ts2026-marquee-prompts__box {
+    box-shadow: 0 0 0 1px var(--marquee-card-line), 0 6px 16px rgb(0 30 91 / 0.06);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__placeholder {
+    font-size: 12px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__cta-text {
+    display: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__cta-link {
+    min-height: 40px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__cta-action {
+    flex: 1 1 auto;
+    justify-content: space-between;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__header {
+    padding: 8px 0 8px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__heading {
+    font-size: 9px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__counter {
+    font-size: 11px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__list {
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__list {
+    padding-bottom: 14px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__prompt {
+    min-height: 38px;
+    padding: 5px 9px;
+    font-size: 13px;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__hint {
+    --hint-tip-p: 0;
+    --hint-tip-off: calc(var(--prompts-add-gap) + var(--prompts-add-size) / 2);
+    right: 0;
+    bottom: calc(100% + 14px);
+    height: 38px;
+    padding: 0 12px;
+    font-size: 13px;
+    line-height: 38px;
+    transform: translate(0, 6px);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint] .ts2026-marquee-prompts__hint {
+    transform: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__hint {
+    --hint-fill: rgb(236 243 253 / 0.96);
+    bottom: calc(100% + 12px);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__hint::before {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint {
+    --hint-flip: -1;
+    top: calc(100% + 14px);
+    bottom: auto;
+    transform: translate(0, -6px);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below][data-hint] .ts2026-marquee-prompts__hint {
+    transform: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint-arrow {
+    top: calc(var(--hint-tip-h) * -1);
+    bottom: auto;
+    transform: scaleY(-1);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-open] .ts2026-marquee-prompts__hint {
+    left: -50%;
+    right: -50%;
+    width: max-content;
+    margin-inline: auto;
+    transform: translate(0, 6px);
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-open][data-hint] .ts2026-marquee-prompts__hint {
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ts2026-marquee .marquee--center-image .image__wrapper::after,
+  #ts2026-marquee .ts2026-marquee-prompts__box,
+  #ts2026-marquee .ts2026-marquee-prompts__box::before,
+  #ts2026-marquee .ts2026-marquee-prompts__box::after,
+  #ts2026-marquee .ts2026-marquee-prompts__composer,
+  #ts2026-marquee .ts2026-marquee-prompts__add,
+  #ts2026-marquee .ts2026-marquee-prompts__panel,
+  #ts2026-marquee .ts2026-marquee-prompts__panel-inner,
+  #ts2026-marquee .ts2026-marquee-prompts__cta,
+  #ts2026-marquee .ts2026-marquee-prompts__cta-inner,
+  #ts2026-marquee .ts2026-marquee-prompts__hint,
+  #ts2026-marquee .ts2026-marquee-prompts__hint::before,
+  #ts2026-marquee .ts2026-marquee-prompts__hint::after,
+  #ts2026-marquee .ts2026-marquee-prompts__hint-arrow,
+  #ts2026-marquee .ts2026-marquee-prompts__item,
+  #ts2026-marquee .ts2026-marquee-prompts__prompt,
+  #ts2026-marquee .ts2026-marquee-prompts__arrow {
+    transition: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring {
+    animation: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts__box::before,
+  #ts2026-marquee .ts2026-marquee-prompts__box::after,
+  #ts2026-marquee .ts2026-marquee-prompts__prompt::before {
+    animation: none;
+  }
+  #ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:first-of-type {
+    opacity: 0.35;
+    transform: scale(1.5);
+  }
+}
+
+#ts2026-marquee #ts2026-marquee-text {
+  margin: 8px 0 94px;
+  padding-inline: 16px;
+  background: none;
+}
+#ts2026-marquee #ts2026-marquee-text > .container,
+#ts2026-marquee #ts2026-marquee-text article,
+#ts2026-marquee #ts2026-marquee-text header {
+  display: block;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+#ts2026-marquee #ts2026-marquee-text .headline {
+  margin: 0;
+  font-family: var(--marquee-card-font);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 18px;
+  letter-spacing: normal;
+  color: #444;
+  text-align: center;
+}
+
+/* The docked hint hangs below the frame (23px on tablet); keep the footnote clear of it.
+   Phones keep a fixed 24px gap to the frame. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  #ts2026-marquee #ts2026-marquee-text {
+    margin-top: 20px;
+  }
+}
+@media (max-width: 767px) {
+  #ts2026-marquee #ts2026-marquee-text {
+    margin-top: 24px;
+    margin-bottom: 48px;
+  }
+}

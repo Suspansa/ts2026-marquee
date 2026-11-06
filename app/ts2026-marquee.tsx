@@ -14,6 +14,7 @@ const SWEEP_HOVER_RATE = 0.35;
 
 const HAVE_CURRENT_DATA = 2;
 const FRAME_EVENTS = ["loadeddata", "seeked", "canplay", "error"] as const;
+// Longest a picked slide waits for its video's first frame before cutting to the slide's poster instead.
 const FRAME_WAIT_MS = 4000;
 // Longest the outgoing slide stays under an incoming video that has not shown its first frame yet.
 const PRESENT_WAIT_MS = 1000;
@@ -25,7 +26,8 @@ const CUT = "data-ts2026-marquee-cut";
 // Set while the window chrome is faded out of the active slide.
 const CHROME_OUT = "data-ts2026-marquee-chrome-out";
 // Seconds into a slide's video at which its app goes full-bleed and the window chrome fades out, keyed by
-// slide index: slide 3 cuts from the Studio window to the globe dashboard at 18.07s on desktop and phone.
+// slide index: slide 3 cuts from the Studio window to the globe dashboard at 18.07s. Desktop and tablet only:
+// on phones the menu bar stays on through the cut.
 const CHROME_OUT_AT: Record<number, number> = { 3: 18.07 };
 // How long the chrome takes to fade; it starts early enough to be gone at the cut.
 const CHROME_FADE_S = 0.25;
@@ -121,6 +123,7 @@ export type Ts2026MarqueeOptions = {
   pulseDelay?: number;
   pulseIntroDelay?: number;
   hintDelay?: number;
+  hintPhoneTimeout?: number;
   imageDuration?: number;
 };
 
@@ -150,6 +153,8 @@ const DEFAULTS: Required<Ts2026MarqueeOptions> = {
   pulseDelay: 400,
   pulseIntroDelay: 1000,
   hintDelay: 1000,
+  // Phones only: the "Tap to explore…" hint hides this long after it shows.
+  hintPhoneTimeout: 15000,
   imageDuration: 6000,
 };
 
@@ -218,7 +223,10 @@ function cloneMedia(slide: Ts2026MarqueeSlide): HTMLImageElement | HTMLVideoElem
   clone.removeAttribute("id");
   clone.dataset.ts2026MarqueeSlide = String(slide.index);
   if (clone instanceof HTMLVideoElement) {
-    // The poster is the hero still, framed differently from the video: it flashes before playback.
+    // The poster is the hero still, framed differently from the video, so it would flash before playback on
+    // every cut. It is kept aside and only put on when the first frame is late (see showPoster).
+    const poster = clone.getAttribute("poster");
+    if (poster) clone.dataset.ts2026MarqueePoster = poster;
     clone.removeAttribute("poster");
     clone.muted = true;
     clone.defaultMuted = true;
@@ -233,6 +241,12 @@ function cloneMedia(slide: Ts2026MarqueeSlide): HTMLImageElement | HTMLVideoElem
     clone.decoding = "async";
   }
   return clone;
+}
+
+// Puts the CMS poster on a video whose first frame is still loading, so the cut shows a still rather than black.
+function showPoster(video: HTMLVideoElement) {
+  const poster = video.dataset.ts2026MarqueePoster;
+  if (poster && !video.poster) video.poster = poster;
 }
 
 function playVideo(video: HTMLVideoElement) {
@@ -546,6 +560,8 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   let hintSeen = false;
   let pulseTimer = 0;
   let hintTimer = 0;
+  let hintExpired = false;
+  let hintExpireTimer = 0;
   let openHint = false;
   let openHintTimer = 0;
   let active = 0;
@@ -554,7 +570,19 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     const docked = Boolean(card.dataset.dock);
     const held = docked && (expanded || mediaDone);
     const cued = !hintSeen && !expanded && (!docked || mediaDone);
-    const hinted = (cued && hintDue) || openHint;
+    const cueHint = cued && hintDue && !hintExpired;
+    const hinted = cueHint || openHint;
+    // Phones: the cue hint hides hintPhoneTimeout after it shows, until the cue is armed again.
+    if (phone && cueHint && !hintExpireTimer) {
+      hintExpireTimer = window.setTimeout(() => {
+        hintExpireTimer = 0;
+        hintExpired = true;
+        sync();
+      }, options.hintPhoneTimeout);
+    } else if (!cueHint && hintExpireTimer) {
+      window.clearTimeout(hintExpireTimer);
+      hintExpireTimer = 0;
+    }
     const current = clones.get(active);
     card.toggleAttribute("data-teaser", held);
     card.toggleAttribute("data-playing", Boolean(current) && !held && !playHeld && !mediaDone);
@@ -626,8 +654,11 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   const disarmCue = () => {
     window.clearTimeout(pulseTimer);
     window.clearTimeout(hintTimer);
+    window.clearTimeout(hintExpireTimer);
+    hintExpireTimer = 0;
     pulseDue = false;
     hintDue = false;
+    hintExpired = false;
   };
   const armCue = (delay: number) => {
     disarmCue();
@@ -666,6 +697,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   };
 
   const frameReady = (video: HTMLVideoElement) => video.readyState >= HAVE_CURRENT_DATA && !video.seeking;
+  // Calls `done` once `media` has a frame to show. On a slow network that can take a while, so after FRAME_WAIT_MS
+  // the video gets its CMS poster and the cut lands on that still instead of a black window; the frame
+  // replaces it as soon as it is decoded.
   const whenFrameReady = (media: HTMLImageElement | HTMLVideoElement | undefined, done: () => void) => {
     cancelSettle?.();
     if (!(media instanceof HTMLVideoElement) || frameReady(media)) {
@@ -686,7 +720,10 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
       if (event.type === "error" || frameReady(media)) finish();
     };
     for (const type of FRAME_EVENTS) media.addEventListener(type, onEvent);
-    timer = window.setTimeout(finish, FRAME_WAIT_MS);
+    timer = window.setTimeout(() => {
+      showPoster(media);
+      finish();
+    }, FRAME_WAIT_MS);
     cancelSettle = cleanup;
   };
 
@@ -778,7 +815,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   let shown = -1;
   let unwatchChrome: (() => void) | null = null;
   const syncChrome = () => {
-    const at = CHROME_OUT_AT[shown];
+    const at = phone ? undefined : CHROME_OUT_AT[shown];
     const current = clones.get(shown);
     const out = at !== undefined && current instanceof HTMLVideoElement && current.currentTime >= at - CHROME_FADE_S;
     root.toggleAttribute(CHROME_OUT, out);
@@ -788,7 +825,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     unwatchChrome = null;
     shown = index;
     syncChrome();
-    if (!(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined) return;
+    if (phone || !(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined) return;
     let handle = 0;
     const perFrame = typeof video.requestVideoFrameCallback === "function";
     const onFrame = () => {
@@ -973,7 +1010,8 @@ if (typeof document !== "undefined" && document.currentScript) {
   }
 }
 
-// React entry: waits for the marquee root to be committed by React, then boots the marquee (formerly ts2026-marquee-init.tsx).
+// ---- React entry (Next.js only; scripts/build-dist.mjs strips everything below this line) ----
+// Waits for the marquee root to be committed by React, then boots the marquee.
 type Fiber = {
   tag: number;
   stateNode: unknown;
