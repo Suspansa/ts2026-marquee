@@ -16,6 +16,13 @@ const ENTERING = "data-ts2026-marquee-entering";
 const DIM = "data-ts2026-marquee-dim";
 // Set while the veil is lifting with a cut to the next slide, so it drops at once instead of fading.
 const CUT = "data-ts2026-marquee-cut";
+// Set while the window chrome is faded out of the active slide.
+const CHROME_OUT = "data-ts2026-marquee-chrome-out";
+// Seconds into a slide's video at which its app goes full-bleed and the window chrome fades out, keyed by
+// slide index: slide 3 cuts from the Studio window to the globe dashboard at 18.07s on desktop and phone.
+const CHROME_OUT_AT: Record<number, number> = { 3: 18.07 };
+// How long the chrome takes to fade; it starts early enough to be gone at the cut.
+const CHROME_FADE_S = 0.25;
 
 const PHONE_QUERY = "(max-width: 767px)";
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
@@ -743,6 +750,36 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     }
   };
 
+  // The chrome follows the slide on screen (not the picked one, which waits for its cut): it fades out once
+  // that video reaches its full-bleed cut and snaps back when the video wraps, rewinds or another slide cuts in.
+  let shown = -1;
+  let unwatchChrome: (() => void) | null = null;
+  const syncChrome = () => {
+    const at = CHROME_OUT_AT[shown];
+    const current = clones.get(shown);
+    const out = at !== undefined && current instanceof HTMLVideoElement && current.currentTime >= at - CHROME_FADE_S;
+    root.toggleAttribute(CHROME_OUT, out);
+  };
+  const watchChrome = (index: number, video: HTMLImageElement | HTMLVideoElement | undefined) => {
+    unwatchChrome?.();
+    unwatchChrome = null;
+    shown = index;
+    syncChrome();
+    if (!(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined) return;
+    let handle = 0;
+    const perFrame = typeof video.requestVideoFrameCallback === "function";
+    const onFrame = () => {
+      syncChrome();
+      handle = video.requestVideoFrameCallback(onFrame);
+    };
+    if (perFrame) handle = video.requestVideoFrameCallback(onFrame);
+    video.addEventListener("timeupdate", syncChrome);
+    unwatchChrome = () => {
+      video.removeEventListener("timeupdate", syncChrome);
+      if (handle) video.cancelVideoFrameCallback(handle);
+    };
+  };
+
   const select = (index: number) => {
     active = index;
     mediaDone = false;
@@ -777,6 +814,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     }
     incoming?.setAttribute(ACTIVE, "");
     root.dataset.ts2026MarqueeActive = String(index);
+    watchChrome(index, incoming);
 
     const finish = () => {
       finishSwap = null;
@@ -885,6 +923,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     disarmCue();
     hideOpenHint();
     unwatchMedia?.();
+    unwatchChrome?.();
     finishSwap?.();
     for (const clone of clones.values()) {
       if (clone instanceof HTMLVideoElement) clone.pause();
@@ -899,6 +938,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     delete root.dataset.ts2026MarqueeActive;
     root.removeAttribute(DIM);
     root.removeAttribute(CUT);
+    root.removeAttribute(CHROME_OUT);
   };
 }
 

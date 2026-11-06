@@ -127,14 +127,14 @@ export default function Home() {
                             <div className="video-html5 desktop-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-poster.png?w=1024">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts2026-video-2.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
                             <div className="video-html5 mobile-tablet-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-poster-mobile.png?w=639">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-mobile.mp4" type="video/mp4" />
 
                                 </video>
                             </div>

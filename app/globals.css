@@ -416,6 +416,13 @@
   }
 }
 
+/* Once the active video goes full-bleed (slide 3's globe dashboard), the chrome fades off it; it snaps back
+   without a fade when the video wraps or another slide cuts in. */
+#ts2026-marquee[data-ts2026-marquee-chrome-out] .ts2026-marquee-prompts__chrome {
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
 #ts2026-marquee .ts2026-marquee-prompts {
   --prompts-pill-y: 33.96cqw;
   --prompts-pill-h: 48px;
