@@ -1,5 +1,11 @@
+"use client";
+
+import { useEffect } from "react";
+
 export const TS2026_MARQUEE_ROOT_ID = "ts2026-marquee";
 export const TS2026_MARQUEE_HERO_ID = "ts2026-marquee-video";
+// The text blade whose headline and button feed the card's CTA; its own markup stays hidden.
+export const TS2026_MARQUEE_CTA_ID = "ts2026-marquee-dropdown-btn";
 const SLIDE_ID = /^ts2026-marquee-video-(\d+)$/;
 const PREFIX = "ts2026-marquee-prompts";
 
@@ -179,6 +185,22 @@ function readSlide(section: HTMLElement, index: number, phone: boolean): Ts2026M
   return null;
 }
 
+type Ts2026MarqueeCta = { text: string; label: string; href: string };
+
+const cleanText = (node: Element | null | undefined) => node?.textContent?.replace(/\s+/g, " ").trim() ?? "";
+
+// Lifts the CTA copy out of the dropdown-button blade: its headline becomes the card's text, its button the
+// action. Anything missing there falls back to the options, then to the hero's own primary button.
+function readCta(hero: HTMLElement, options: Required<Ts2026MarqueeOptions>): Ts2026MarqueeCta {
+  const blade = document.getElementById(TS2026_MARQUEE_CTA_ID);
+  const button = blade?.querySelector<HTMLAnchorElement>("a.cta_button[href]") ?? null;
+  const text = cleanText(blade?.querySelector(".headline")) || options.ctaText;
+  const label = cleanText(button) || button?.closest("pbc-button")?.getAttribute("data-link-text") || options.ctaLabel;
+  const href =
+    options.ctaHref || button?.href || hero.querySelector<HTMLAnchorElement>("a.cta_button[href]")?.href || "#";
+  return { text, label, href };
+}
+
 function collectSlides(root: HTMLElement, phone: boolean): Ts2026MarqueeSlide[] {
   const slides: Ts2026MarqueeSlide[] = [];
   for (const section of root.querySelectorAll<HTMLElement>('[id^="ts2026-marquee-video-"]')) {
@@ -282,7 +304,7 @@ function saveExplored(key: string, explored: Set<number>) {
   }
 }
 
-function buildCard(slides: Ts2026MarqueeSlide[], options: Required<Ts2026MarqueeOptions>, ctaHref: string) {
+function buildCard(slides: Ts2026MarqueeSlide[], options: Required<Ts2026MarqueeOptions>, cta: Ts2026MarqueeCta) {
   const card = el("div", PREFIX);
   card.id = PREFIX;
   card.dataset.state = "collapsed";
@@ -311,18 +333,19 @@ function buildCard(slides: Ts2026MarqueeSlide[], options: Required<Ts2026Marquee
   hint.append(hintText, hintArrow);
   composer.append(placeholder, add, hint);
 
-  const cta = el("div", `${PREFIX}__cta`);
+  const ctaWrap = el("div", `${PREFIX}__cta`);
   const ctaInner = el("div", `${PREFIX}__cta-inner`);
   const ctaLink = el("a", `${PREFIX}__cta-link`);
-  ctaLink.href = ctaHref;
+  ctaLink.href = cta.href;
+  ctaLink.setAttribute("aria-label", `${cta.label}: ${cta.text}`);
   const ctaAction = el("span", `${PREFIX}__cta-action`, ARROW_RIGHT_SVG);
-  ctaAction.prepend(Object.assign(document.createElement("span"), { textContent: options.ctaLabel }));
+  ctaAction.prepend(Object.assign(document.createElement("span"), { textContent: cta.label }));
   ctaLink.append(
-    Object.assign(el("span", `${PREFIX}__cta-text`), { textContent: options.ctaText }),
+    Object.assign(el("span", `${PREFIX}__cta-text`), { textContent: cta.text }),
     ctaAction,
   );
   ctaInner.append(ctaLink);
-  cta.append(ctaInner);
+  ctaWrap.append(ctaInner);
 
   const panel = el("div", `${PREFIX}__panel`);
   panel.id = panelId;
@@ -362,7 +385,7 @@ function buildCard(slides: Ts2026MarqueeSlide[], options: Required<Ts2026Marquee
 
   inner.append(header, list);
   panel.append(inner);
-  box.append(composer, panel, cta);
+  box.append(composer, panel, ctaWrap);
   card.append(box);
   return { card, box, composer, panel, hint, hintText, counter, buttons };
 }
@@ -513,8 +536,8 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   chrome.setAttribute("aria-hidden", "true");
   stage.append(chrome);
 
-  const ctaHref = options.ctaHref || hero.querySelector<HTMLAnchorElement>("a.cta_button[href]")?.href || "#";
-  const { card, box, composer, panel, hint, hintText, counter, buttons } = buildCard(slides, options, ctaHref);
+  const cta = readCta(hero, options);
+  const { card, box, composer, panel, hint, hintText, counter, buttons } = buildCard(slides, options, cta);
 
   let expanded = false;
   let mediaDone = false;
@@ -948,4 +971,65 @@ if (typeof document !== "undefined" && document.currentScript) {
   } else {
     initTs2026Marquee();
   }
+}
+
+// React entry: waits for the marquee root to be committed by React, then boots the marquee (formerly ts2026-marquee-init.tsx).
+type Fiber = {
+  tag: number;
+  stateNode: unknown;
+  return: Fiber | null;
+  child: Fiber | null;
+  sibling: Fiber | null;
+};
+type FiberRoot = { current: Fiber };
+const HOST_ROOT = 3;
+
+function isCommitted(node: Element): boolean {
+  const key = Object.keys(node).find((k) => k.startsWith("__reactFiber$"));
+  let fiber = key ? (node as unknown as Record<string, Fiber | undefined>)[key] : undefined;
+  if (!fiber) return false;
+  while (fiber.return) fiber = fiber.return;
+  if (fiber.tag !== HOST_ROOT) return false;
+  const root = fiber.stateNode as FiberRoot | null;
+  if (!root?.current) return false;
+  const stack: Fiber[] = [root.current];
+  while (stack.length) {
+    const f = stack.pop()!;
+    if (f.stateNode === node) return true;
+    if (f.sibling) stack.push(f.sibling);
+    if (f.child) stack.push(f.child);
+  }
+  return false;
+}
+
+const HYDRATION_WAIT_MS = 5000;
+
+const POLL_MS = 16;
+
+export default function Ts2026MarqueeInit() {
+  useEffect(() => {
+    let teardown: (() => void) | null = null;
+    let timer = 0;
+    let cancelled = false;
+    const started = performance.now();
+
+    const tick = () => {
+      if (cancelled) return;
+      const root = document.getElementById(TS2026_MARQUEE_ROOT_ID);
+      const timedOut = performance.now() - started > HYDRATION_WAIT_MS;
+      if (root && (isCommitted(root) || timedOut)) {
+        teardown = initTs2026Marquee();
+        return;
+      }
+      if (!timedOut) timer = window.setTimeout(tick, POLL_MS);
+    };
+    tick();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+      teardown?.();
+    };
+  }, []);
+  return null;
 }

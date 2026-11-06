@@ -235,9 +235,64 @@ export default function Home() {
 
         </div>
 
+        <div id="1793993141537_ajq" data-blade-id="1793993141537_ajq" data-blade-position="1" data-blade-name="sf/text" data-blade-variant="text" data-blade-source="www" data-blade-type="blade">
+
+            <section id="ts2026-marquee-dropdown-btn" className="relative text--blade theme--light_gradient  theme-light-blue-20
+                    ">
+
+                <div className="container container--min-spacing-bottom container--min-spacing-top">
+                    <article className="grid grid_main text__blade--link_below text--left
+                            " data-module-id="1793993141537_ajq" data-module-name="Want to explore more?" data-module-position="1" data-module-type="headline" data-module-track-impressions="false">
+
+                        <header className="text__blade-heading eyebrow--large  grid grid_sub">
+
+                            <h2 className="headline text__headline--large">
+                                
+                                    Want to explore more?
+                                
+
+                            </h2>
+
+                        </header>
+
+                        <div className="text__blade-cta">
+
+                            <div className="cta_container flex flex--left ctas__1">
+
+                                <pbc-button className="cta_button__wrapper" data-link-text="Download for free" data-link-url="https://google.com" data-link-type="primary cta">
+
+                                    <a className="cta_button " data-size="" data-variant="primary" data-stacking="default" aria-label="Download for free: Want to explore more?" href="https://google.com">
+                                        Download for free
+                                        
+                                        
+                                        
+                                        
+                                            
+                                                
+                                            
+                                        
+                                        
+
+                                        
+                                    </a>
+
+                                </pbc-button>
+
+                            </div>
+
+                        </div>
+
+                    </article>
+                </div>
+
+            </section>
+
+        </div>
+
     </div>
 
 </div>
+
 
     </div>
   );

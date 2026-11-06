@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Ts2026MarqueeInit from "./ts2026-marquee-init";
+import Ts2026MarqueeInit from "./ts2026-marquee";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
