@@ -80,7 +80,7 @@ export default function Home() {
                             <div className="video-html5 desktop-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-poster.png?w=1024">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-v2.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -127,7 +127,7 @@ export default function Home() {
                             <div className="video-html5 desktop-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-poster.png?w=1024">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-v2.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -174,7 +174,7 @@ export default function Home() {
                             <div className="video-html5 desktop-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-poster.png?w=1024">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-v2.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
