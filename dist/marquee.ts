@@ -124,6 +124,7 @@ type Ts2026MarqueeOptions = {
   pulseIntroDelay?: number;
   hintDelay?: number;
   hintPhoneTimeout?: number;
+  autoOpenDelay?: number;
   imageDuration?: number;
 };
 
@@ -155,6 +156,8 @@ const DEFAULTS: Required<Ts2026MarqueeOptions> = {
   hintDelay: 1000,
   // Phones only: the "Tap to explore…" hint hides this long after it shows.
   hintPhoneTimeout: 15000,
+  // The first screen opens its prompts by itself this long after load; 0 turns it off.
+  autoOpenDelay: 4000,
   imageDuration: 6000,
 };
 
@@ -595,9 +598,10 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     }
     if (hinted) composer.setAttribute("aria-describedby", hint.id);
     else composer.removeAttribute("aria-describedby");
+    // The veil (dim and blur) is for the open docked prompts only: the CTA a finished slide shows leaves it clear.
     // While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
     // it drops together with the cut.
-    const dim = held || (playHeld && root.hasAttribute(DIM));
+    const dim = (docked && expanded) || (playHeld && root.hasAttribute(DIM));
     if (dim) root.removeAttribute(CUT);
     root.toggleAttribute(DIM, dim);
     if (current instanceof HTMLVideoElement) {
@@ -788,7 +792,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     window.clearTimeout(mediaTimer);
     if (!media) return;
     if (media instanceof HTMLVideoElement) {
-      // Docked, the slide dims and blurs once it finishes, so play it through once and let it rest on its
+      // Docked, the slide pauses under the CTA once it finishes, so play it through once and let it rest on its
       // last frame; looping would wrap to the first frame before the wrap is noticed and the video paused.
       const loop = media.loop;
       if (card.dataset.dock) media.loop = false;
@@ -969,8 +973,17 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   renderExplored();
   show(clones.has(options.initialSlide) ? options.initialSlide : 0);
   armCue(options.pulseIntroDelay);
+  // Skipped if the visitor opened the prompts or picked one first. Opening on the first screen marks the hint as
+  // seen, so it goes away together with the cue.
+  const autoOpenTimer =
+    options.autoOpenDelay > 0
+      ? window.setTimeout(() => {
+          if (!expanded && !card.dataset.dock) setExpanded(true);
+        }, options.autoOpenDelay)
+      : 0;
 
   return () => {
+    window.clearTimeout(autoOpenTimer);
     card.removeEventListener("click", onClick);
     card.removeEventListener("pointerover", onPointerOver);
     card.removeEventListener("pointerout", onPointerOut);
