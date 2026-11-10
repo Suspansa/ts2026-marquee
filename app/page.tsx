@@ -87,7 +87,7 @@ export default function Home() {
                             <div className="video-html5 mobile-tablet-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-poster-mobile.png?w=639">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-mobile.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-v2-mobile.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -134,7 +134,7 @@ export default function Home() {
                             <div className="video-html5 mobile-tablet-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-poster-mobile.png?w=639">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-mobile.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-my-pipeline-progressing-v2-mobile.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
@@ -181,7 +181,7 @@ export default function Home() {
                             <div className="video-html5 mobile-tablet-only">
                                 <video data-component="html5video" preload="none" playsInline muted poster="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-poster-mobile.png?w=639">
 
-                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-mobile.mp4" type="video/mp4" />
+                                    <source src="https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/create-an-interactive-data-app-v2-mobile.mp4" type="video/mp4" />
 
                                 </video>
                             </div>
