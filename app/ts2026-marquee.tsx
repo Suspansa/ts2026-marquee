@@ -31,6 +31,9 @@ const CHROME_OUT = "data-ts2026-marquee-chrome-out";
 const CHROME_OUT_AT: Record<number, number> = { 3: 18.07 };
 // How long the chrome takes to fade; it starts early enough to be gone at the cut.
 const CHROME_FADE_S = 0.25;
+// How long the hint takes to fade out (its CSS hides it 0.3s after data-hint goes); the first screen's prompts
+// wait this long before they unfold, so the two never overlap.
+const HINT_OUT_MS = 300;
 
 const PHONE_QUERY = "(max-width: 767px)";
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
@@ -567,6 +570,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   let hintExpireTimer = 0;
   let openHint = false;
   let openHintTimer = 0;
+  let openTimer = 0;
   let active = 0;
   let playHeld = false;
   const sync = () => {
@@ -645,6 +649,8 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   const pinnedOpen = () => expanded && !card.dataset.dock;
 
   const setExpanded = (open: boolean) => {
+    window.clearTimeout(openTimer);
+    openTimer = 0;
     if (!open) hideOpenHint();
     expanded = open;
     card.dataset.state = open ? "expanded" : "collapsed";
@@ -948,9 +954,22 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   card.addEventListener("pointerover", onPointerOver);
   card.addEventListener("pointerout", onPointerOut);
 
+  // On the first screen a showing hint fades out first and the prompts unfold once it is gone.
+  const openPrompts = () => {
+    if (expanded || openTimer) return;
+    if (card.dataset.dock || !card.hasAttribute("data-hint") || reducedMotion()) {
+      setExpanded(true);
+      return;
+    }
+    hintSeen = true;
+    sync();
+    openTimer = window.setTimeout(() => setExpanded(true), HINT_OUT_MS);
+  };
+
   const onToggle = () => {
     if (pinnedOpen()) showOpenHint();
-    else setExpanded(!expanded);
+    else if (expanded) setExpanded(false);
+    else openPrompts();
   };
   composer.addEventListener("click", onToggle);
 
@@ -973,17 +992,18 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   renderExplored();
   show(clones.has(options.initialSlide) ? options.initialSlide : 0);
   armCue(options.pulseIntroDelay);
-  // Skipped if the visitor opened the prompts or picked one first. Opening on the first screen marks the hint as
-  // seen, so it goes away together with the cue.
+  // Skipped if the visitor opened the prompts or picked one first. The hint fades out first, then the prompts
+  // unfold (see openPrompts).
   const autoOpenTimer =
     options.autoOpenDelay > 0
       ? window.setTimeout(() => {
-          if (!expanded && !card.dataset.dock) setExpanded(true);
+          if (!card.dataset.dock) openPrompts();
         }, options.autoOpenDelay)
       : 0;
 
   return () => {
     window.clearTimeout(autoOpenTimer);
+    window.clearTimeout(openTimer);
     card.removeEventListener("click", onClick);
     card.removeEventListener("pointerover", onPointerOver);
     card.removeEventListener("pointerout", onPointerOut);

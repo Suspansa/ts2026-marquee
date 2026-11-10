@@ -435,6 +435,9 @@
 }
 
 #ts2026-marquee .ts2026-marquee-prompts {
+  /* Centred on the app's content area, not the whole window: the 80px sidebar of the 2130-wide hero puts
+     "Good morning" at ~51.9%, so the card shifts right by half the sidebar to sit under it. */
+  --prompts-pill-x: calc(50% + 100cqw * 40 / 2130);
   --prompts-pill-y: 33.96cqw;
   --prompts-pill-h: 48px;
   --prompts-open-h: 60px;
@@ -458,7 +461,7 @@
 
 #ts2026-marquee .ts2026-marquee-prompts__box {
   position: absolute;
-  left: 50%;
+  left: var(--prompts-pill-x);
   display: flex;
   flex-direction: column;
   top: calc(var(--prompts-pill-y) - var(--prompts-pill-h) / 2);
@@ -1296,6 +1299,8 @@
     object-position: 53.1% 0;
   }
   #ts2026-marquee .ts2026-marquee-prompts {
+    /* No sidebar on phones, and the crop above already centres the greeting in the frame. */
+    --prompts-pill-x: 50%;
     --prompts-pill-y: 86.67cqw;
     --prompts-pill-h: 44px;
     --prompts-open-h: var(--prompts-pill-h);
