@@ -29,7 +29,7 @@ const CUT = "data-ts2026-marquee-cut";
 const CHROME_OUT = "data-ts2026-marquee-chrome-out";
 // [from, until] seconds into a slide's video during which its app goes full-bleed: the window chrome and the
 // prompt input fade out at `from` and fade back in at `until`, keyed by slide index: slide 3 hides them from 43s
-// to 53s. Desktop and tablet only: on phones the menu bar and input stay on throughout.
+// to 53s.
 const CHROME_OUT_AT: Record<number, readonly [number, number]> = { 3: [43, 53] };
 // Set while the prompt input is faded out together with the chrome; it also comes back if the video ends first.
 const INPUT_OUT = "data-ts2026-marquee-input-out";
@@ -201,11 +201,12 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
-function readSlide(section: HTMLElement, index: number, phone: boolean): Ts2026MarqueeSlide | null {
+function readSlide(section: HTMLElement, index: number): Ts2026MarqueeSlide | null {
   const title = section.querySelector(".display_caption")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
   const host = section.querySelector<HTMLElement>(".video__wrapper, .image__wrapper") ?? section;
-  const preferred = phone ? ".mobile-tablet-only video" : ".desktop-only video";
-  const video = host.querySelector<HTMLVideoElement>(preferred) ?? host.querySelector<HTMLVideoElement>("video");
+  // Test: phones play the desktop videos too.
+  const video =
+    host.querySelector<HTMLVideoElement>(".desktop-only video") ?? host.querySelector<HTMLVideoElement>("video");
   if (video) return { index, title, kind: "video", media: video };
   const img = host.querySelector<HTMLImageElement>("img");
   if (img) return { index, title, kind: "image", media: img };
@@ -228,12 +229,12 @@ function readCta(hero: HTMLElement, options: Required<Ts2026MarqueeOptions>): Ts
   return { text, label, href };
 }
 
-function collectSlides(root: HTMLElement, phone: boolean): Ts2026MarqueeSlide[] {
+function collectSlides(root: HTMLElement): Ts2026MarqueeSlide[] {
   const slides: Ts2026MarqueeSlide[] = [];
   for (const section of root.querySelectorAll<HTMLElement>('[id^="ts2026-marquee-video-"]')) {
     const match = SLIDE_ID.exec(section.id);
     if (!match) continue;
-    const slide = readSlide(section, Number(match[1]), phone);
+    const slide = readSlide(section, Number(match[1]));
     if (slide) slides.push(slide);
   }
   return slides.sort((a, b) => a.index - b.index);
@@ -550,7 +551,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   const stage = hero?.querySelector<HTMLElement>(".image__wrapper");
   if (!root || !hero || !stage || root.dataset.ts2026MarqueeReady) return null;
 
-  const slides = collectSlides(root, phone);
+  const slides = collectSlides(root);
   if (slides.length === 0) return null;
 
   const heroMedia = stage.querySelector<HTMLImageElement | HTMLVideoElement>("img, video");
@@ -820,7 +821,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     syncChrome();
     // A slide that hid the input unfolds its CTA (and the cue) CTA_AFTER_INPUT_MS after the input came back.
     const wait =
-      card.dataset.dock && !phone && CHROME_OUT_AT[active] !== undefined && inputBackAt
+      card.dataset.dock && CHROME_OUT_AT[active] !== undefined && inputBackAt
         ? CTA_AFTER_INPUT_MS - (performance.now() - inputBackAt)
         : 0;
     if (wait > 0) {
@@ -872,7 +873,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   // When the input last came back after a slide hid it; 0 while it has not.
   let inputBackAt = 0;
   const syncChrome = () => {
-    const span = phone ? undefined : CHROME_OUT_AT[shown];
+    const span = CHROME_OUT_AT[shown];
     const current = clones.get(shown);
     const t = current instanceof HTMLVideoElement ? current.currentTime : -1;
     const out = span !== undefined && t >= span[0] - CHROME_FADE_S && t < span[1];
@@ -889,7 +890,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     unwatchChrome = null;
     shown = index;
     syncChrome();
-    if (phone || !(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined) return;
+    if (!(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined) return;
     let handle = 0;
     const perFrame = typeof video.requestVideoFrameCallback === "function";
     const onFrame = () => {
