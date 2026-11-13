@@ -8,6 +8,12 @@
       "port": 3000
     },
     {
+      "name": "dist-preview",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4173", "--directory", "dist"],
+      "port": 4173
+    },
+    {
       "name": "next-attach",
       "url": "http://localhost:3000"
     }

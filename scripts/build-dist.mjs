@@ -3,6 +3,7 @@
 //   dist/marquee.css  app/globals.css only (the site provides the global salesforce.com styles)
 //   dist/vendor/      the two global salesforce.com stylesheets, for the standalone index.html preview only
 //   dist/marquee.ts   app/ts2026-marquee.tsx without the React entry: a plain, self-starting TypeScript file
+//   dist/marquee.js   marquee.ts compiled, for the standalone index.html preview only
 // Run: npm run build:dist
 import { readFileSync, writeFileSync, mkdirSync, copyFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -57,6 +58,13 @@ if (diagnostics.length) {
   for (const d of diagnostics) console.error(ts.flattenDiagnosticMessageText(d.messageText, "\n"));
   throw new Error("dist/marquee.ts has type errors");
 }
+// dist/marquee.js is that file compiled, so the standalone index.html actually runs (it builds the prompts
+// dropdown). Like dist/vendor/, it is for the preview only: the hand-off is marquee.ts.
+const marqueeJs = ts.transpileModule(marqueeTs, {
+  compilerOptions: { target: ts.ScriptTarget.ES2017, module: ts.ModuleKind.None },
+  fileName: "marquee.ts",
+}).outputText;
+writeFileSync(join(dist, "marquee.js"), marqueeJs);
 
 // ---------- CSS ----------
 // marquee.css is ONLY our stylesheet: the blade build runs it through lightningcss, and the site already
@@ -105,4 +113,4 @@ ${markup}
 writeFileSync(join(dist, "index.html"), html);
 
 const kb = (s) => `${(Buffer.byteLength(s) / 1024).toFixed(1)} KB`;
-console.log(`dist/index.html  ${kb(html)}\ndist/marquee.css ${kb(css)}\ndist/marquee.ts  ${kb(marqueeTs)}`);
+console.log(`dist/index.html  ${kb(html)}\ndist/marquee.css ${kb(css)}\ndist/marquee.ts  ${kb(marqueeTs)}\ndist/marquee.js  ${kb(marqueeJs)}`);
