@@ -439,24 +439,35 @@
    the chrome the still slides left by those 43px, so the greeting sits on the window's centre, right above
    the card. The padding crops nothing but the still's own sidebar edge (hidden by the chrome anyway) and
    leaves a strip on the right that shows the element's white background, the same white as the still there.
-   Only once the script has laid the chrome over the still (it sets the attribute); phones crop it instead. */
-@media (min-width: 768px) {
-  #ts2026-marquee .marquee--center-image .image__wrapper > img[data-ts2026-marquee-slide="0"] {
-    box-sizing: border-box;
-    padding-right: calc(100cqw * 43 / 2130);
-    object-position: right top;
-  }
+   Plain CSS, not the script's slide attribute, so the greeting is already in place on the very first paint
+   and never moves when the script comes up; the site's own "transition: all" on images is switched off for
+   the same reason (it would slide and resample the baked-in text). Phones crop the still instead. */
+#ts2026-marquee .marquee--center-image .image__wrapper > img:first-child {
+  box-sizing: border-box;
+  padding-right: calc(100cqw * 43 / 2130);
+  object-position: right top;
+  /* The still's own 1024×642, spelled out so its box and scale are final before the script sets the variable. */
+  aspect-ratio: var(--ts2026-marquee-aspect, 1024 / 642);
+  transition: none;
 }
 
-/* The phone window has no sidebar: only the menu bar, cut from the 654-wide mobile design. */
-@media (max-width: 767px) {
-  #ts2026-marquee .ts2026-marquee-prompts__chrome {
-    background: url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-top-bar-mobile.png") left top / 100% auto no-repeat;
+/* Until the script lays its chrome layer over the still, the veil layer (already there, and clear) carries the
+   same chrome, so the still's own slid-aside menu bar and sidebar never show. */
+@media (min-width: 768px) {
+  #ts2026-marquee:not([data-ts2026-marquee-ready]) .marquee--center-image .image__wrapper::after {
+    --chrome-top-h: calc(100cqw * 68 / 2130);
+    --chrome-side-w: calc(100cqw * 80 / 2130);
+    background:
+      url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-top-bar.png") left top / 100% auto no-repeat,
+      url("https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/ts-side-bar.png") left top var(--chrome-top-h) / var(--chrome-side-w) auto no-repeat,
+      linear-gradient(#f6f6f4 0 48.5%, #ececec 48.5% 97%, #e2e2e2 97%) left top / 100% var(--chrome-top-h) no-repeat,
+      linear-gradient(#fafbf8 0 0) left top var(--chrome-top-h) / var(--chrome-side-w) 100% no-repeat;
+    transition: none;
   }
 }
 
 /* Once the active video goes full-bleed (slide 3's globe dashboard), the chrome fades off it; it snaps back
-   without a fade when the video wraps or another slide cuts in. Phones keep it on (the script never sets this). */
+   without a fade when the video wraps or another slide cuts in. */
 #ts2026-marquee[data-ts2026-marquee-chrome-out] .ts2026-marquee-prompts__chrome {
   opacity: 0;
   transition: opacity 0.25s ease;
@@ -465,6 +476,32 @@
 /* Once the video reaches the end of its full-bleed stretch, the chrome fades back in. */
 #ts2026-marquee[data-ts2026-marquee-chrome-back] .ts2026-marquee-prompts__chrome {
   transition: opacity 0.25s ease;
+}
+
+/* Keeps the compositor ticking while a slide plays, so a 30fps video lands on every 4th refresh of a 120Hz
+   screen instead of alternating 3rd and 5th, which reads as judder on slow pans (slide 3's ending). 1px at
+   1–2% opacity of nothing: it paints nothing, it only has to be a running compositor animation. */
+@keyframes ts2026-marquee-ticker {
+  from {
+    opacity: 0.01;
+  }
+  to {
+    opacity: 0.02;
+  }
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__ticker {
+  grid-area: 1 / 1;
+  align-self: start;
+  justify-self: start;
+  width: 1px;
+  height: 1px;
+  opacity: 0.01;
+  pointer-events: none;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts[data-playing] ~ .ts2026-marquee-prompts__ticker {
+  animation: ts2026-marquee-ticker 1s linear infinite alternate;
 }
 
 /* The prompt input fades out and back in with the chrome. */
@@ -1319,6 +1356,18 @@
   #ts2026-marquee {
     --marquee-card-radius: 24px;
     --marquee-card-inset: 12px;
+    /* The light strip under the video: tall on the first screen, so the window has room for the open prompt
+       card, and down to the docked input's height once a prompt has been picked. */
+    --marquee-ext-hero: 286px;
+    --marquee-ext-dock: 84px;
+    --marquee-ext: var(--marquee-ext-hero);
+    /* The input's centre line, the same on every screen: where it docks on the strip under a video (12px off
+       the strip's bottom edge, half of its 44px height above that). The input never moves; only the window's
+       bottom edge slides up to it. */
+    --marquee-pill-y: calc(100cqw * 642 / 1024 + var(--marquee-ext-dock) - 34px);
+  }
+  #ts2026-marquee[data-ts2026-marquee-active]:not([data-ts2026-marquee-active="0"]) {
+    --marquee-ext: var(--marquee-ext-dock);
   }
   #ts2026-marquee .marquee--blade .grid_main {
     row-gap: 48px;
@@ -1326,17 +1375,74 @@
   #ts2026-marquee .marquee--center-image .image__wrapper {
     width: calc(100% + 2 * var(--marquee-frame-pad));
   }
+  /* Test: phones show the desktop videos whole, in their own aspect ratio, never cropped or stretched. Under
+     the video the window carries on as a light strip (--marquee-ext tall, the media's own padding and
+     background), and the docked input sits on that strip instead of on the video. */
   #ts2026-marquee .marquee--center-image .image__wrapper > .image__asset,
   #ts2026-marquee .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media {
-    aspect-ratio: 5 / 8;
+    padding-bottom: var(--marquee-ext);
+    background: #f7f8f8;
   }
-  /* The hero still has an 80px sidebar on its left (3.8% of 2130), so "Good morning" sits at 51.9% of the
-     image, not 50%. The 5/8 crop shows 1/2.55 of the width: 53.1% lines that point up with the frame's centre. */
-  #ts2026-marquee .marquee--center-image .image__wrapper > img {
-    object-position: 53.1% 0;
+  /* The window only animates its height once the script is up: while the page is still loading its
+     stylesheets, a transition would replay every restyle as a visible jump. */
+  #ts2026-marquee[data-ts2026-marquee-ready] .marquee--center-image .image__wrapper > .image__asset,
+  #ts2026-marquee[data-ts2026-marquee-ready] .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media {
+    transition: padding-bottom 0.5s ease, height 0.5s ease, clip-path 0.5s ease;
   }
+  #ts2026-marquee .marquee--center-image .image__wrapper > video.ts2026-marquee-prompts__media {
+    box-sizing: content-box;
+    aspect-ratio: 1024 / 642;
+  }
+  /* The overlay chrome covers the video only, not the strip. */
+  #ts2026-marquee .ts2026-marquee-prompts__chrome {
+    align-self: start;
+    height: calc(100cqw * 642 / 1024);
+    border-radius: var(--marquee-window-radius) var(--marquee-window-radius) 0 0;
+  }
+  /* Only the first screen is enlarged: the whole hero still scales up 2.6x about a point picked so that "Good
+     morning" (centred at 45% of the still's height, 28.2cqw) lands 43px above the input's centre line, clear of
+     the 44px pill. The
+     clip cuts the scaled still back to the window, strip included, so the frame keeps its size; the clip also
+     eats the still's white outline, which the veil layer draws instead. */
+  #ts2026-marquee .marquee--center-image .image__wrapper > img:first-child {
+    /* Matched by plain CSS, not by the script's slide attribute, so the very first paint is already enlarged.
+       The 43px shift that centres the greeting (see the chrome rules above) is repeated here for the same
+       reason, and the height is spelled out so it never depends on the aspect the script sets. */
+    box-sizing: border-box;
+    padding-right: calc(100cqw * 43 / 2130);
+    object-position: right top;
+    aspect-ratio: auto;
+    /* 2.6 rather than less: the input sits low in the window, and at this scale the still's own menu bar is
+       pushed just past the window's top edge instead of showing as a cropped grey band. */
+    --zoom: 2.6;
+    --zoom-h: calc(100cqw * 642 / 1024 + var(--marquee-ext));
+    --zoom-oy: calc((var(--zoom) * 28.2cqw - var(--marquee-pill-y) + 43px) / (var(--zoom) - 1));
+    --zoom-cut: calc(1 - 1 / var(--zoom));
+    height: var(--zoom-h);
+    background: #fff;
+    transform-origin: 50% var(--zoom-oy);
+    transform: scale(var(--zoom));
+    clip-path: inset(
+      calc(var(--zoom-oy) * var(--zoom-cut))
+      calc(50% * var(--zoom-cut))
+      calc((var(--zoom-h) - var(--zoom-oy)) * var(--zoom-cut))
+      round calc(var(--marquee-window-radius) / var(--zoom))
+    );
+  }
+  #ts2026-marquee .marquee--center-image .image__wrapper::after {
+    box-shadow: 0 0 0 1px rgb(255 255 255 / 0.85);
+  }
+  /* The still is enlarged whole, its own menu bar and sidebar included, so the small overlay chrome would not
+     match it: it stays off until a video cuts in. */
+  #ts2026-marquee .image__wrapper > img:first-child[data-ts2026-marquee-active] ~ .ts2026-marquee-prompts__chrome {
+    opacity: 0;
+  }
+  /* The card's box keeps the docked window's height whatever the window's own height, so the input is at the
+     same spot whether it hangs from the top (first screen) or sits on the bottom (docked). */
   #ts2026-marquee .ts2026-marquee-prompts {
-    --prompts-pill-y: 86.67cqw;
+    bottom: auto;
+    height: calc(100cqw * 642 / 1024 + var(--marquee-ext-dock));
+    --prompts-pill-y: var(--marquee-pill-y);
     --prompts-pill-h: 44px;
     --prompts-open-h: var(--prompts-pill-h);
     --prompts-pill-w: round(calc(100% - 20px), 2px);
@@ -1434,6 +1540,13 @@
   }
   #ts2026-marquee .ts2026-marquee-prompts[data-hint-open][data-hint] .ts2026-marquee-prompts__hint {
     transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #ts2026-marquee[data-ts2026-marquee-ready] .marquee--center-image .image__wrapper > .image__asset,
+  #ts2026-marquee[data-ts2026-marquee-ready] .marquee--center-image .image__wrapper > .ts2026-marquee-prompts__media {
+    transition: none;
   }
 }
 

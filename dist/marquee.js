@@ -27,7 +27,7 @@
     const CHROME_OUT = "data-ts2026-marquee-chrome-out";
     // [from, until] seconds into a slide's video during which its app goes full-bleed: the window chrome and the
     // prompt input fade out at `from` and fade back in at `until`, keyed by slide index: slide 3 hides them from 43s
-    // to 53s. Desktop and tablet only: on phones the menu bar and input stay on throughout.
+    // to 53s.
     const CHROME_OUT_AT = { 3: [43, 53] };
     // Set while the prompt input is faded out together with the chrome; it also comes back if the video ends first.
     const INPUT_OUT = "data-ts2026-marquee-input-out";
@@ -119,12 +119,12 @@
         hintIntro: "Click to explore suggested prompts",
         hintTouch: "Tap to explore more prompts",
         hintIntroTouch: "Tap to explore suggested prompts",
-        // Shown above the first screen's prompts while they are open; 0 keeps it up until a prompt is picked,
-        // a positive value hides it that many ms after it shows.
+        // Shown above the first screen's open prompts once the composer is clicked; 0 keeps it up until a prompt is
+        // picked, a positive value hides it that many ms after it shows.
         hintOpen: "Choose a prompt below to see Studio in action",
         hintOpenDuration: 0,
-        // How long after the prompts start to unfold the hint above them shows (the unfold itself takes 0.5s).
-        hintOpenDelay: 600,
+        // How long a finished slide stays sharp under its CTA before the soft veil (dim and blur) comes on.
+        ctaBlurDelay: 6000,
         pulseDelay: 400,
         pulseIntroDelay: 1000,
         hintDelay: 1000,
@@ -147,12 +147,12 @@
             node.innerHTML = html;
         return node;
     }
-    function readSlide(section, index, phone) {
+    function readSlide(section, index) {
         var _a, _b, _c, _d, _e;
         const title = (_c = (_b = (_a = section.querySelector(".display_caption")) === null || _a === void 0 ? void 0 : _a.textContent) === null || _b === void 0 ? void 0 : _b.replace(/\s+/g, " ").trim()) !== null && _c !== void 0 ? _c : "";
         const host = (_d = section.querySelector(".video__wrapper, .image__wrapper")) !== null && _d !== void 0 ? _d : section;
-        const preferred = phone ? ".mobile-tablet-only video" : ".desktop-only video";
-        const video = (_e = host.querySelector(preferred)) !== null && _e !== void 0 ? _e : host.querySelector("video");
+        // Test: phones play the desktop videos too.
+        const video = (_e = host.querySelector(".desktop-only video")) !== null && _e !== void 0 ? _e : host.querySelector("video");
         if (video)
             return { index, title, kind: "video", media: video };
         const img = host.querySelector("img");
@@ -172,13 +172,13 @@
         const href = options.ctaHref || (button === null || button === void 0 ? void 0 : button.href) || ((_c = hero.querySelector("a.cta_button[href]")) === null || _c === void 0 ? void 0 : _c.href) || "#";
         return { text, label, href };
     }
-    function collectSlides(root, phone) {
+    function collectSlides(root) {
         const slides = [];
         for (const section of root.querySelectorAll('[id^="ts2026-marquee-video-"]')) {
             const match = SLIDE_ID.exec(section.id);
             if (!match)
                 continue;
-            const slide = readSlide(section, Number(match[1]), phone);
+            const slide = readSlide(section, Number(match[1]));
             if (slide)
                 slides.push(slide);
         }
@@ -484,7 +484,7 @@
         const stage = hero === null || hero === void 0 ? void 0 : hero.querySelector(".image__wrapper");
         if (!root || !hero || !stage || root.dataset.ts2026MarqueeReady)
             return null;
-        const slides = collectSlides(root, phone);
+        const slides = collectSlides(root);
         if (slides.length === 0)
             return null;
         const heroMedia = stage.querySelector("img, video");
@@ -522,6 +522,9 @@
         // False while a finished slide that hid the input waits CTA_AFTER_INPUT_MS before its CTA unfolds.
         let ctaDue = true;
         let ctaTimer = 0;
+        // The soft veil under the CTA waits ctaBlurDelay after the CTA shows.
+        let softDue = false;
+        let softTimer = 0;
         const sync = () => {
             const docked = Boolean(card.dataset.dock);
             const held = docked && (expanded || (mediaDone && ctaDue));
@@ -554,10 +557,27 @@
             else
                 composer.removeAttribute("aria-describedby");
             // The veil (dim and blur) is full under the open docked prompts and lighter under the CTA a finished slide
-            // shows. While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
+            // shows, ctaBlurDelay after that CTA comes up. While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
             // it drops together with the cut.
             const dim = (docked && expanded) || (playHeld && root.hasAttribute(DIM));
-            const soft = held && !dim;
+            const ctaUp = docked && mediaDone && ctaDue;
+            if (!ctaUp) {
+                window.clearTimeout(softTimer);
+                softTimer = 0;
+                softDue = false;
+            }
+            else if (!softDue && !softTimer) {
+                if (options.ctaBlurDelay > 0) {
+                    softTimer = window.setTimeout(() => {
+                        softTimer = 0;
+                        softDue = true;
+                        sync();
+                    }, options.ctaBlurDelay);
+                }
+                else
+                    softDue = true;
+            }
+            const soft = held && !dim && (softDue || !ctaUp);
             if (dim || soft)
                 root.removeAttribute(CUT);
             root.toggleAttribute(DIM, dim);
@@ -594,26 +614,19 @@
             window.clearTimeout(openHintTimer);
             openHint = false;
         };
-        // One timer covers both the wait before the hint shows and, with hintOpenDuration, its time on screen.
-        const showOpenHint = (delay = 0) => {
+        const showOpenHint = () => {
             hideOpenHint();
-            const show = () => {
-                openHint = true;
+            openHint = true;
+            sync();
+            if (options.hintOpenDuration <= 0)
+                return;
+            openHintTimer = window.setTimeout(() => {
+                openHint = false;
                 sync();
-                if (options.hintOpenDuration <= 0)
-                    return;
-                openHintTimer = window.setTimeout(() => {
-                    openHint = false;
-                    sync();
-                }, options.hintOpenDuration);
-            };
-            if (delay > 0)
-                openHintTimer = window.setTimeout(show, delay);
-            else
-                show();
+            }, options.hintOpenDuration);
         };
         const pinnedOpen = () => expanded && !card.dataset.dock;
-        const setExpanded = (open, byClick = false) => {
+        const setExpanded = (open) => {
             window.clearTimeout(openTimer);
             openTimer = 0;
             if (!open)
@@ -626,10 +639,6 @@
                 hintSeen = true;
             fit();
             sync();
-            // Only a click on the composer brings "Choose a prompt below…" above the first screen's prompts, once they
-            // have mostly unfolded; prompts that open by themselves stay without it.
-            if (open && byClick && !card.dataset.dock)
-                showOpenHint(options.hintOpenDelay);
         };
         const disarmCue = () => {
             window.clearTimeout(pulseTimer);
@@ -651,6 +660,13 @@
         if (options.expanded)
             setExpanded(true);
         stage.append(card);
+        // A 1px, all but invisible pulse that runs while a slide plays (see its CSS): on 120Hz screens Chromium hands a
+        // video that is the only thing moving to the screen unevenly, every 3rd and 5th refresh instead of every 4th,
+        // and its smooth stretches (slide 3's last seconds) judder as if they paused. Any running compositor animation
+        // evens that out.
+        const ticker = el("div", `${PREFIX}__ticker`);
+        ticker.setAttribute("aria-hidden", "true");
+        stage.append(ticker);
         const reducedMotion = () => { var _a, _b; return (_b = (_a = window.matchMedia) === null || _a === void 0 ? void 0 : _a.call(window, "(prefers-reduced-motion: reduce)").matches) !== null && _b !== void 0 ? _b : false; };
         let cancelSettle = null;
         const afterTransition = (target, property, timeout, done) => {
@@ -767,7 +783,7 @@
             // Brings the input back now if it is still out, so the wait below counts from its return.
             syncChrome();
             // A slide that hid the input unfolds its CTA (and the cue) CTA_AFTER_INPUT_MS after the input came back.
-            const wait = card.dataset.dock && !phone && CHROME_OUT_AT[active] !== undefined && inputBackAt
+            const wait = card.dataset.dock && CHROME_OUT_AT[active] !== undefined && inputBackAt
                 ? CTA_AFTER_INPUT_MS - (performance.now() - inputBackAt)
                 : 0;
             if (wait > 0) {
@@ -823,7 +839,7 @@
         // When the input last came back after a slide hid it; 0 while it has not.
         let inputBackAt = 0;
         const syncChrome = () => {
-            const span = phone ? undefined : CHROME_OUT_AT[shown];
+            const span = CHROME_OUT_AT[shown];
             const current = clones.get(shown);
             const t = current instanceof HTMLVideoElement ? current.currentTime : -1;
             const out = span !== undefined && t >= span[0] - CHROME_FADE_S && t < span[1];
@@ -841,7 +857,7 @@
             unwatchChrome = null;
             shown = index;
             syncChrome();
-            if (phone || !(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined)
+            if (!(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined)
                 return;
             let handle = 0;
             const perFrame = typeof video.requestVideoFrameCallback === "function";
@@ -964,24 +980,26 @@
         card.addEventListener("pointerover", onPointerOver);
         card.addEventListener("pointerout", onPointerOut);
         // On the first screen a showing hint fades out first and the prompts unfold once it is gone.
-        const openPrompts = (byClick = false) => {
+        const openPrompts = () => {
             if (expanded || openTimer)
                 return;
             if (card.dataset.dock || !card.hasAttribute("data-hint") || reducedMotion()) {
-                setExpanded(true, byClick);
+                setExpanded(true);
                 return;
             }
             hintSeen = true;
             sync();
-            openTimer = window.setTimeout(() => setExpanded(true, byClick), HINT_OUT_MS);
+            openTimer = window.setTimeout(() => setExpanded(true), HINT_OUT_MS);
         };
+        // "Choose a prompt below…" shows only on a click on the composer whose first-screen prompts are already open;
+        // opening them, by a click or by themselves, never brings it up.
         const onToggle = () => {
             if (pinnedOpen())
                 showOpenHint();
             else if (expanded)
                 setExpanded(false);
             else
-                openPrompts(true);
+                openPrompts();
         };
         composer.addEventListener("click", onToggle);
         const onKeydown = (event) => {
@@ -1012,6 +1030,7 @@
             : 0;
         return () => {
             window.clearTimeout(autoOpenTimer);
+            window.clearTimeout(softTimer);
             window.clearTimeout(openTimer);
             window.clearTimeout(ctaTimer);
             card.removeEventListener("click", onClick);
@@ -1034,6 +1053,7 @@
                 clone.remove();
             }
             card.remove();
+            ticker.remove();
             chrome.remove();
             heroMedia === null || heroMedia === void 0 ? void 0 : heroMedia.removeAttribute("data-ts2026-marquee-slide");
             heroMedia === null || heroMedia === void 0 ? void 0 : heroMedia.removeAttribute(ACTIVE);

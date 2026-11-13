@@ -132,7 +132,7 @@ export type Ts2026MarqueeOptions = {
   hintIntroTouch?: string;
   hintOpen?: string;
   hintOpenDuration?: number;
-  hintOpenDelay?: number;
+  ctaBlurDelay?: number;
   pulseDelay?: number;
   pulseIntroDelay?: number;
   hintDelay?: number;
@@ -162,12 +162,12 @@ const DEFAULTS: Required<Ts2026MarqueeOptions> = {
   hintIntro: "Click to explore suggested prompts",
   hintTouch: "Tap to explore more prompts",
   hintIntroTouch: "Tap to explore suggested prompts",
-  // Shown above the first screen's prompts while they are open; 0 keeps it up until a prompt is picked,
-  // a positive value hides it that many ms after it shows.
+  // Shown above the first screen's open prompts once the composer is clicked; 0 keeps it up until a prompt is
+  // picked, a positive value hides it that many ms after it shows.
   hintOpen: "Choose a prompt below to see Studio in action",
   hintOpenDuration: 0,
-  // How long after the prompts start to unfold the hint above them shows (the unfold itself takes 0.5s).
-  hintOpenDelay: 600,
+  // How long a finished slide stays sharp under its CTA before the soft veil (dim and blur) comes on.
+  ctaBlurDelay: 6000,
   pulseDelay: 400,
   pulseIntroDelay: 1000,
   hintDelay: 1000,
@@ -592,6 +592,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   // False while a finished slide that hid the input waits CTA_AFTER_INPUT_MS before its CTA unfolds.
   let ctaDue = true;
   let ctaTimer = 0;
+  // The soft veil under the CTA waits ctaBlurDelay after the CTA shows.
+  let softDue = false;
+  let softTimer = 0;
   const sync = () => {
     const docked = Boolean(card.dataset.dock);
     const held = docked && (expanded || (mediaDone && ctaDue));
@@ -621,10 +624,24 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     if (hinted) composer.setAttribute("aria-describedby", hint.id);
     else composer.removeAttribute("aria-describedby");
     // The veil (dim and blur) is full under the open docked prompts and lighter under the CTA a finished slide
-    // shows. While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
+    // shows, ctaBlurDelay after that CTA comes up. While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
     // it drops together with the cut.
     const dim = (docked && expanded) || (playHeld && root.hasAttribute(DIM));
-    const soft = held && !dim;
+    const ctaUp = docked && mediaDone && ctaDue;
+    if (!ctaUp) {
+      window.clearTimeout(softTimer);
+      softTimer = 0;
+      softDue = false;
+    } else if (!softDue && !softTimer) {
+      if (options.ctaBlurDelay > 0) {
+        softTimer = window.setTimeout(() => {
+          softTimer = 0;
+          softDue = true;
+          sync();
+        }, options.ctaBlurDelay);
+      } else softDue = true;
+    }
+    const soft = held && !dim && (softDue || !ctaUp);
     if (dim || soft) root.removeAttribute(CUT);
     root.toggleAttribute(DIM, dim);
     root.toggleAttribute(SOFT, soft);
@@ -658,24 +675,19 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     window.clearTimeout(openHintTimer);
     openHint = false;
   };
-  // One timer covers both the wait before the hint shows and, with hintOpenDuration, its time on screen.
-  const showOpenHint = (delay = 0) => {
+  const showOpenHint = () => {
     hideOpenHint();
-    const show = () => {
-      openHint = true;
+    openHint = true;
+    sync();
+    if (options.hintOpenDuration <= 0) return;
+    openHintTimer = window.setTimeout(() => {
+      openHint = false;
       sync();
-      if (options.hintOpenDuration <= 0) return;
-      openHintTimer = window.setTimeout(() => {
-        openHint = false;
-        sync();
-      }, options.hintOpenDuration);
-    };
-    if (delay > 0) openHintTimer = window.setTimeout(show, delay);
-    else show();
+    }, options.hintOpenDuration);
   };
   const pinnedOpen = () => expanded && !card.dataset.dock;
 
-  const setExpanded = (open: boolean, byClick = false) => {
+  const setExpanded = (open: boolean) => {
     window.clearTimeout(openTimer);
     openTimer = 0;
     if (!open) hideOpenHint();
@@ -686,9 +698,6 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     if (open && (!card.dataset.dock || mediaDone)) hintSeen = true;
     fit();
     sync();
-    // Only a click on the composer brings "Choose a prompt below…" above the first screen's prompts, once they
-    // have mostly unfolded; prompts that open by themselves stay without it.
-    if (open && byClick && !card.dataset.dock) showOpenHint(options.hintOpenDelay);
   };
 
   const disarmCue = () => {
@@ -710,6 +719,13 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   };
   if (options.expanded) setExpanded(true);
   stage.append(card);
+  // A 1px, all but invisible pulse that runs while a slide plays (see its CSS): on 120Hz screens Chromium hands a
+  // video that is the only thing moving to the screen unevenly, every 3rd and 5th refresh instead of every 4th,
+  // and its smooth stretches (slide 3's last seconds) judder as if they paused. Any running compositor animation
+  // evens that out.
+  const ticker = el("div", `${PREFIX}__ticker`);
+  ticker.setAttribute("aria-hidden", "true");
+  stage.append(ticker);
 
   const reducedMotion = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
   let cancelSettle: (() => void) | null = null;
@@ -1013,21 +1029,23 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   card.addEventListener("pointerout", onPointerOut);
 
   // On the first screen a showing hint fades out first and the prompts unfold once it is gone.
-  const openPrompts = (byClick = false) => {
+  const openPrompts = () => {
     if (expanded || openTimer) return;
     if (card.dataset.dock || !card.hasAttribute("data-hint") || reducedMotion()) {
-      setExpanded(true, byClick);
+      setExpanded(true);
       return;
     }
     hintSeen = true;
     sync();
-    openTimer = window.setTimeout(() => setExpanded(true, byClick), HINT_OUT_MS);
+    openTimer = window.setTimeout(() => setExpanded(true), HINT_OUT_MS);
   };
 
+  // "Choose a prompt below…" shows only on a click on the composer whose first-screen prompts are already open;
+  // opening them, by a click or by themselves, never brings it up.
   const onToggle = () => {
     if (pinnedOpen()) showOpenHint();
     else if (expanded) setExpanded(false);
-    else openPrompts(true);
+    else openPrompts();
   };
   composer.addEventListener("click", onToggle);
 
@@ -1061,6 +1079,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
 
   return () => {
     window.clearTimeout(autoOpenTimer);
+    window.clearTimeout(softTimer);
     window.clearTimeout(openTimer);
     window.clearTimeout(ctaTimer);
     card.removeEventListener("click", onClick);
@@ -1082,6 +1101,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
       clone.remove();
     }
     card.remove();
+    ticker.remove();
     chrome.remove();
     heroMedia?.removeAttribute("data-ts2026-marquee-slide");
     heroMedia?.removeAttribute(ACTIVE);
