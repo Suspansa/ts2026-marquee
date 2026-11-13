@@ -20,6 +20,7 @@
   --marquee-hero-pad-top: 72px;
   position: relative;
   overflow-x: clip;
+  z-index: 0;
 }
 
 @media (max-width: 1023px) {
@@ -400,6 +401,14 @@
   backdrop-filter: blur(max(2px, 0.37cqw));
 }
 
+/* Under the "Download for free" CTA a finished slide shows: the same veil at about half strength, so the
+   slide stays recognisable behind it. */
+#ts2026-marquee[data-ts2026-marquee-soft] .marquee--center-image .image__wrapper::after {
+  background: rgb(128 175 212 / 0.15);
+  -webkit-backdrop-filter: blur(max(1px, 0.2cqw));
+  backdrop-filter: blur(max(1px, 0.2cqw));
+}
+
 /* A slide change has no fade: the veil stays on the outgoing slide and drops in the same frame as the cut. */
 #ts2026-marquee[data-ts2026-marquee-cut] .marquee--center-image .image__wrapper::after {
   transition: none;
@@ -453,6 +462,18 @@
   transition: opacity 0.25s ease;
 }
 
+/* Once the video reaches the end of its full-bleed stretch, the chrome fades back in. */
+#ts2026-marquee[data-ts2026-marquee-chrome-back] .ts2026-marquee-prompts__chrome {
+  transition: opacity 0.25s ease;
+}
+
+/* The prompt input fades out and back in with the chrome. */
+#ts2026-marquee[data-ts2026-marquee-input-out] .ts2026-marquee-prompts__box {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
 #ts2026-marquee .ts2026-marquee-prompts {
   /* Centred on the window in every state; the hero still slides its greeting onto the same axis (see above). */
   --prompts-pill-x: 50%;
@@ -460,7 +481,7 @@
   --prompts-pill-h: 48px;
   --prompts-open-h: 60px;
   --prompts-pill-w: round(min(max(41.6cqw, 440px), 100%), 2px);
-  --prompts-add-size: round(calc(var(--prompts-pill-h) * 0.58), 1px);
+  --prompts-add-size: round(calc(var(--prompts-pill-h) * 0.54), 1px);
   --prompts-add-gap: round(calc(var(--prompts-pill-h) * 0.22), 1px);
   --prompts-add-inset: calc((var(--prompts-pill-h) - var(--prompts-add-size)) / 2);
   --prompts-dock-open-extra: calc(var(--marquee-card-inset) - var(--prompts-add-inset));
@@ -492,7 +513,8 @@
   background: #fff;
   box-shadow: 0 10px 28px rgb(140 196 255 / 0.55), 0 1px 3px rgb(0 30 91 / 0.06);
   translate: 0 0;
-  transition: border-radius var(--marquee-unfold), box-shadow var(--marquee-unfold), translate var(--marquee-unfold);
+  transition: border-radius var(--marquee-unfold), box-shadow var(--marquee-unfold), translate var(--marquee-unfold),
+    opacity 0.25s ease, visibility 0.25s;
 }
 
 #ts2026-marquee .ts2026-marquee-prompts[data-dock="bottom"] .ts2026-marquee-prompts__box {
@@ -611,6 +633,25 @@
   text-overflow: ellipsis;
 }
 
+#ts2026-marquee .ts2026-marquee-prompts__plus {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: round(calc(var(--prompts-pill-h) * 0.26), 1px);
+  height: round(calc(var(--prompts-pill-h) * 0.26), 1px);
+  color: #6e6e6e;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__plus svg {
+  width: 100%;
+  height: 100%;
+}
+
+#ts2026-marquee .ts2026-marquee-prompts__add svg {
+  width: 48%;
+  height: 48%;
+}
+
 #ts2026-marquee .ts2026-marquee-prompts__add {
   position: relative;
   isolation: isolate;
@@ -631,47 +672,10 @@
   background: var(--marquee-pill-button-open);
 }
 
-#ts2026-marquee .ts2026-marquee-prompts__ring {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: 50%;
-  background: rgb(43 115 255 / 0.45);
-  opacity: 0;
-  pointer-events: none;
-}
-
-#ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring {
-  animation: ts2026-marquee-pulse 3.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
-}
-
-#ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:nth-of-type(2) {
-  animation-delay: 1.2s;
-}
-
-#ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:nth-of-type(3) {
-  animation-delay: 2.4s;
-}
-
-@keyframes ts2026-marquee-pulse {
-  0% {
-    opacity: 0.8;
-    transform: scale(1);
-  }
-  75% {
-    opacity: 0;
-    transform: scale(2.2);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(2.2);
-  }
-}
-
 #ts2026-marquee .ts2026-marquee-prompts__hint {
   --hint-r: 8px;
-  --hint-b: 1.5px;
-  --hint-stroke: rgb(197 210 242 / 0.5);
+  --hint-b: 2px;
+  --hint-stroke: #c5d2f2;
   --hint-fill: rgb(234 241 253 / 0.2);
   --hint-tip: 11px;
   --hint-tip-w: calc(var(--hint-tip) * 1.4142);
@@ -761,20 +765,28 @@
   border-radius: var(--hint-r);
   box-shadow: 0 calc(8px * var(--hint-flip)) 20px rgb(0 30 91 / 0.12);
   mask-clip: no-clip;
-  mask-composite: subtract, add, add, add;
+  /* Cut out of the frame: the border where the tip joins (a strip, plus a triangle each side so the inner edge
+     of the border runs straight into the tip's inner edge) and the shadow under the tip. */
+  mask-composite: subtract, add, add, add, add, add;
   mask-image:
     linear-gradient(#000 0 0),
     linear-gradient(#000 0 0),
+    linear-gradient(to bottom left, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom right, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
     linear-gradient(to bottom left, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px)),
     linear-gradient(to bottom right, #000 calc(50% - 0.5px), transparent calc(50% + 0.5px));
   mask-size:
     calc(100% + 80px) calc(100% + 80px),
     var(--hint-gap) calc(var(--hint-b) + 0.5px),
+    var(--hint-b) var(--hint-b),
+    var(--hint-b) var(--hint-b),
     var(--hint-tip-h) var(--hint-tip-h),
     var(--hint-tip-h) var(--hint-tip-h);
   mask-position:
     -40px -40px,
     right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 0.5) * var(--hint-gap)) bottom 0,
+    right calc(var(--hint-tip-x) + var(--hint-tip-p) * var(--hint-b) + var(--hint-gap) / 2) bottom 0,
+    right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 1) * var(--hint-b) - var(--hint-gap) / 2) bottom 0,
     right calc(var(--hint-tip-x) + var(--hint-tip-p) * var(--hint-tip-h)) bottom calc(var(--hint-tip-h) * -1),
     right calc(var(--hint-tip-x) + (var(--hint-tip-p) - 1) * var(--hint-tip-h)) bottom calc(var(--hint-tip-h) * -1);
 }
@@ -832,6 +844,13 @@
 
 #ts2026-marquee .ts2026-marquee-prompts[data-hint-open][data-hint] .ts2026-marquee-prompts__hint {
   transform: translate(50%, 0);
+}
+
+/* The "Click to explore…" hint hangs centred under the pill, on the first screen and docked alike. */
+#ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint {
+  --hint-tip-p: 0.5;
+  --hint-tip-off: 0px;
+  right: 50%;
 }
 
 @media (min-width: 1024px) {
@@ -1400,6 +1419,12 @@
     bottom: auto;
     transform: scaleY(-1);
   }
+  #ts2026-marquee .ts2026-marquee-prompts[data-hint-below] .ts2026-marquee-prompts__hint {
+    left: -50%;
+    right: -50%;
+    width: max-content;
+    margin-inline: auto;
+  }
   #ts2026-marquee .ts2026-marquee-prompts[data-hint-open] .ts2026-marquee-prompts__hint {
     left: -50%;
     right: -50%;
@@ -1432,17 +1457,10 @@
   #ts2026-marquee .ts2026-marquee-prompts__arrow {
     transition: none;
   }
-  #ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring {
-    animation: none;
-  }
   #ts2026-marquee .ts2026-marquee-prompts__box::before,
   #ts2026-marquee .ts2026-marquee-prompts__box::after,
   #ts2026-marquee .ts2026-marquee-prompts__prompt::before {
     animation: none;
-  }
-  #ts2026-marquee .ts2026-marquee-prompts[data-pulse] .ts2026-marquee-prompts__ring:first-of-type {
-    opacity: 0.35;
-    transform: scale(1.5);
   }
 }
 

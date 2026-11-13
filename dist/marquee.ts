@@ -21,14 +21,23 @@ const PRESENT_WAIT_MS = 1000;
 const ACTIVE = "data-ts2026-marquee-active";
 const ENTERING = "data-ts2026-marquee-entering";
 const DIM = "data-ts2026-marquee-dim";
+// A lighter veil under the CTA a finished docked slide shows.
+const SOFT = "data-ts2026-marquee-soft";
 // Set while the veil is lifting with a cut to the next slide, so it drops at once instead of fading.
 const CUT = "data-ts2026-marquee-cut";
 // Set while the window chrome is faded out of the active slide.
 const CHROME_OUT = "data-ts2026-marquee-chrome-out";
-// Seconds into a slide's video at which its app goes full-bleed and the window chrome fades out, keyed by
-// slide index: slide 3 cuts from the Studio window to the globe dashboard at 18.07s. Desktop and tablet only:
-// on phones the menu bar stays on through the cut.
-const CHROME_OUT_AT: Record<number, number> = { 3: 18.07 };
+// [from, until] seconds into a slide's video during which its app goes full-bleed: the window chrome and the
+// prompt input fade out at `from` and fade back in at `until`, keyed by slide index: slide 3 hides them from 43s
+// to 53s. Desktop and tablet only: on phones the menu bar and input stay on throughout.
+const CHROME_OUT_AT: Record<number, readonly [number, number]> = { 3: [43, 53] };
+// Set while the prompt input is faded out together with the chrome; it also comes back if the video ends first.
+const INPUT_OUT = "data-ts2026-marquee-input-out";
+// Set once the chrome has come back at `until`, so it fades in rather than snapping back.
+const CHROME_BACK = "data-ts2026-marquee-chrome-back";
+// After a slide that hid the input, the CTA unfolds once the video ends and at least this long after the input
+// came back.
+const CTA_AFTER_INPUT_MS = 2000;
 // How long the chrome takes to fade; it starts early enough to be gone at the cut.
 const CHROME_FADE_S = 0.25;
 // How long the hint takes to fade out (its CSS hides it 0.3s after data-hint goes); the first screen's prompts
@@ -123,6 +132,7 @@ type Ts2026MarqueeOptions = {
   hintIntroTouch?: string;
   hintOpen?: string;
   hintOpenDuration?: number;
+  hintOpenDelay?: number;
   pulseDelay?: number;
   pulseIntroDelay?: number;
   hintDelay?: number;
@@ -152,8 +162,12 @@ const DEFAULTS: Required<Ts2026MarqueeOptions> = {
   hintIntro: "Click to explore suggested prompts",
   hintTouch: "Tap to explore more prompts",
   hintIntroTouch: "Tap to explore suggested prompts",
+  // Shown above the first screen's prompts while they are open; 0 keeps it up until a prompt is picked,
+  // a positive value hides it that many ms after it shows.
   hintOpen: "Choose a prompt below to see Studio in action",
-  hintOpenDuration: 3500,
+  hintOpenDuration: 0,
+  // How long after the prompts start to unfold the hint above them shows (the unfold itself takes 0.5s).
+  hintOpenDelay: 600,
   pulseDelay: 400,
   pulseIntroDelay: 1000,
   hintDelay: 1000,
@@ -172,7 +186,9 @@ const REPLAY_SVG = `<svg width="20" height="20" viewBox="0 0 20 20" fill="none" 
 
 const ARROW_RIGHT_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M2.5 8h11m-4.5-4.5L13.5 8 9 12.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-const PLUS_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+const PLUS_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+
+const ARROW_UP_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M8 13V3.25M3.75 7.25 8 3l4.25 4.25" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -338,9 +354,9 @@ function buildCard(slides: Ts2026MarqueeSlide[], options: Required<Ts2026Marquee
   composer.setAttribute("aria-controls", panelId);
   const placeholder = el("span", `${PREFIX}__placeholder`);
   placeholder.textContent = options.placeholder;
-  const add = el("span", `${PREFIX}__add`, PLUS_SVG);
-
-  for (let i = 0; i < 3; i++) add.append(el("span", `${PREFIX}__ring`));
+  const plus = el("span", `${PREFIX}__plus`, PLUS_SVG);
+  plus.setAttribute("aria-hidden", "true");
+  const add = el("span", `${PREFIX}__add`, ARROW_UP_SVG);
   add.setAttribute("aria-hidden", "true");
 
   const hint = el("span", `${PREFIX}__hint`);
@@ -351,7 +367,7 @@ function buildCard(slides: Ts2026MarqueeSlide[], options: Required<Ts2026Marquee
   const hintArrow = el("span", `${PREFIX}__hint-arrow`);
   hintArrow.setAttribute("aria-hidden", "true");
   hint.append(hintText, hintArrow);
-  composer.append(placeholder, add, hint);
+  composer.append(plus, placeholder, add, hint);
 
   const ctaWrap = el("div", `${PREFIX}__cta`);
   const ctaInner = el("div", `${PREFIX}__cta-inner`);
@@ -561,7 +577,6 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
 
   let expanded = false;
   let mediaDone = false;
-  let pulseDue = false;
   let hintDue = false;
   let hintSeen = false;
   let pulseTimer = 0;
@@ -573,9 +588,12 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   let openTimer = 0;
   let active = 0;
   let playHeld = false;
+  // False while a finished slide that hid the input waits CTA_AFTER_INPUT_MS before its CTA unfolds.
+  let ctaDue = true;
+  let ctaTimer = 0;
   const sync = () => {
     const docked = Boolean(card.dataset.dock);
-    const held = docked && (expanded || mediaDone);
+    const held = docked && (expanded || (mediaDone && ctaDue));
     const cued = !hintSeen && !expanded && (!docked || mediaDone);
     const cueHint = cued && hintDue && !hintExpired;
     const hinted = cueHint || openHint;
@@ -593,7 +611,6 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     const current = clones.get(active);
     card.toggleAttribute("data-teaser", held);
     card.toggleAttribute("data-playing", Boolean(current) && !held && !playHeld && !mediaDone);
-    card.toggleAttribute("data-pulse", cued && pulseDue);
     card.toggleAttribute("data-hint", hinted);
     if (hinted) {
       hintText.textContent = openHint ? options.hintOpen : docked ? options.hint : options.hintIntro;
@@ -602,14 +619,17 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     }
     if (hinted) composer.setAttribute("aria-describedby", hint.id);
     else composer.removeAttribute("aria-describedby");
-    // The veil (dim and blur) is for the open docked prompts only: the CTA a finished slide shows leaves it clear.
-    // While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
+    // The veil (dim and blur) is full under the open docked prompts and lighter under the CTA a finished slide
+    // shows. While a picked slide waits for its cut, the veil may come on but never lifts off the outgoing slide:
     // it drops together with the cut.
     const dim = (docked && expanded) || (playHeld && root.hasAttribute(DIM));
-    if (dim) root.removeAttribute(CUT);
+    const soft = held && !dim;
+    if (dim || soft) root.removeAttribute(CUT);
     root.toggleAttribute(DIM, dim);
+    root.toggleAttribute(SOFT, soft);
     if (current instanceof HTMLVideoElement) {
-      if (held || playHeld || document.hidden) current.pause();
+      // A finished docked slide rests on its last frame, also while its CTA waits to unfold.
+      if (held || playHeld || document.hidden || (docked && mediaDone)) current.pause();
       else playVideo(current);
     }
   };
@@ -637,18 +657,24 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     window.clearTimeout(openHintTimer);
     openHint = false;
   };
-  const showOpenHint = () => {
+  // One timer covers both the wait before the hint shows and, with hintOpenDuration, its time on screen.
+  const showOpenHint = (delay = 0) => {
     hideOpenHint();
-    openHint = true;
-    sync();
-    openHintTimer = window.setTimeout(() => {
-      openHint = false;
+    const show = () => {
+      openHint = true;
       sync();
-    }, options.hintOpenDuration);
+      if (options.hintOpenDuration <= 0) return;
+      openHintTimer = window.setTimeout(() => {
+        openHint = false;
+        sync();
+      }, options.hintOpenDuration);
+    };
+    if (delay > 0) openHintTimer = window.setTimeout(show, delay);
+    else show();
   };
   const pinnedOpen = () => expanded && !card.dataset.dock;
 
-  const setExpanded = (open: boolean) => {
+  const setExpanded = (open: boolean, byClick = false) => {
     window.clearTimeout(openTimer);
     openTimer = 0;
     if (!open) hideOpenHint();
@@ -659,6 +685,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     if (open && (!card.dataset.dock || mediaDone)) hintSeen = true;
     fit();
     sync();
+    // Only a click on the composer brings "Choose a prompt below…" above the first screen's prompts, once they
+    // have mostly unfolded; prompts that open by themselves stay without it.
+    if (open && byClick && !card.dataset.dock) showOpenHint(options.hintOpenDelay);
   };
 
   const disarmCue = () => {
@@ -666,15 +695,12 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     window.clearTimeout(hintTimer);
     window.clearTimeout(hintExpireTimer);
     hintExpireTimer = 0;
-    pulseDue = false;
     hintDue = false;
     hintExpired = false;
   };
   const armCue = (delay: number) => {
     disarmCue();
     pulseTimer = window.setTimeout(() => {
-      pulseDue = true;
-      sync();
       hintTimer = window.setTimeout(() => {
         hintDue = true;
         sync();
@@ -789,8 +815,26 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     unwatchMedia?.();
     unwatchMedia = null;
     mediaDone = true;
+    window.clearTimeout(ctaTimer);
+    // Brings the input back now if it is still out, so the wait below counts from its return.
+    syncChrome();
+    // A slide that hid the input unfolds its CTA (and the cue) CTA_AFTER_INPUT_MS after the input came back.
+    const wait =
+      card.dataset.dock && !phone && CHROME_OUT_AT[active] !== undefined && inputBackAt
+        ? CTA_AFTER_INPUT_MS - (performance.now() - inputBackAt)
+        : 0;
+    if (wait > 0) {
+      ctaDue = false;
+      ctaTimer = window.setTimeout(() => {
+        ctaDue = true;
+        sync();
+        armCue(options.pulseDelay);
+      }, wait);
+    } else {
+      ctaDue = true;
+      armCue(options.pulseDelay);
+    }
     sync();
-    armCue(options.pulseDelay);
   };
   const watchMedia = (media: HTMLImageElement | HTMLVideoElement | undefined) => {
     unwatchMedia?.();
@@ -821,14 +865,24 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   };
 
   // The chrome follows the slide on screen (not the picked one, which waits for its cut): it fades out once
-  // that video reaches its full-bleed cut and snaps back when the video wraps, rewinds or another slide cuts in.
+  // that video reaches its full-bleed cut and fades back in at the window's end; it snaps back when the video
+  // wraps, rewinds or another slide cuts in.
   let shown = -1;
   let unwatchChrome: (() => void) | null = null;
+  // When the input last came back after a slide hid it; 0 while it has not.
+  let inputBackAt = 0;
   const syncChrome = () => {
-    const at = phone ? undefined : CHROME_OUT_AT[shown];
+    const span = phone ? undefined : CHROME_OUT_AT[shown];
     const current = clones.get(shown);
-    const out = at !== undefined && current instanceof HTMLVideoElement && current.currentTime >= at - CHROME_FADE_S;
+    const t = current instanceof HTMLVideoElement ? current.currentTime : -1;
+    const out = span !== undefined && t >= span[0] - CHROME_FADE_S && t < span[1];
     root.toggleAttribute(CHROME_OUT, out);
+    root.toggleAttribute(CHROME_BACK, span !== undefined && t >= span[1]);
+    // The input fades out with the chrome and returns with it, or once the video has played to its end.
+    const ended = (shown === active && mediaDone) || (current instanceof HTMLVideoElement && current.ended);
+    const inputOut = out && !ended;
+    if (root.hasAttribute(INPUT_OUT) && !inputOut) inputBackAt = performance.now();
+    root.toggleAttribute(INPUT_OUT, inputOut);
   };
   const watchChrome = (index: number, video: HTMLImageElement | HTMLVideoElement | undefined) => {
     unwatchChrome?.();
@@ -853,6 +907,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   const select = (index: number) => {
     active = index;
     mediaDone = false;
+    window.clearTimeout(ctaTimer);
+    ctaDue = true;
+    inputBackAt = 0;
     hintSeen = false;
     disarmCue();
     const next = clones.get(index);
@@ -955,21 +1012,21 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   card.addEventListener("pointerout", onPointerOut);
 
   // On the first screen a showing hint fades out first and the prompts unfold once it is gone.
-  const openPrompts = () => {
+  const openPrompts = (byClick = false) => {
     if (expanded || openTimer) return;
     if (card.dataset.dock || !card.hasAttribute("data-hint") || reducedMotion()) {
-      setExpanded(true);
+      setExpanded(true, byClick);
       return;
     }
     hintSeen = true;
     sync();
-    openTimer = window.setTimeout(() => setExpanded(true), HINT_OUT_MS);
+    openTimer = window.setTimeout(() => setExpanded(true, byClick), HINT_OUT_MS);
   };
 
   const onToggle = () => {
     if (pinnedOpen()) showOpenHint();
     else if (expanded) setExpanded(false);
-    else openPrompts();
+    else openPrompts(true);
   };
   composer.addEventListener("click", onToggle);
 
@@ -1004,6 +1061,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   return () => {
     window.clearTimeout(autoOpenTimer);
     window.clearTimeout(openTimer);
+    window.clearTimeout(ctaTimer);
     card.removeEventListener("click", onClick);
     card.removeEventListener("pointerover", onPointerOver);
     card.removeEventListener("pointerout", onPointerOut);
@@ -1030,8 +1088,11 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     delete root.dataset.ts2026MarqueeReady;
     delete root.dataset.ts2026MarqueeActive;
     root.removeAttribute(DIM);
+    root.removeAttribute(SOFT);
     root.removeAttribute(CUT);
     root.removeAttribute(CHROME_OUT);
+    root.removeAttribute(INPUT_OUT);
+    root.removeAttribute(CHROME_BACK);
   };
 }
 
