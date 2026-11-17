@@ -7,7 +7,17 @@ const TS2026_MARQUEE_HERO_ID = "ts2026-marquee-video";
 // The text blade whose headline and button feed the card's CTA; its own markup stays hidden.
 const TS2026_MARQUEE_CTA_ID = "ts2026-marquee-dropdown-btn";
 const SLIDE_ID = /^ts2026-marquee-video-(\d+)$/;
+// A slide's follow-up videos, keyed by slide index and listed in play order. They are not in the page's markup:
+// the script adds them and plays each one after the slide's own video (see startHandoff).
+const SLIDE_PARTS: Record<number, readonly string[]> = {
+  1: ["https://wp.sfdcdigital.com/en-us/wp-content/uploads/sites/4/2026/11/how-is-arr-trending-2.mp4"],
+};
 const PREFIX = "ts2026-marquee-prompts";
+// The media blade phones show instead of the marquee's window, and the Vidyard script that plays its video.
+const MOBILE_ID = "ts2026-marquee-video-mobile";
+const VIDYARD_EMBED_SRC = "https://play.vidyard.com/embed/v4.js";
+// The frame that video is rebuilt in, inside the hero.
+const MOBILE_VIDEO = "ts2026-marquee-mobile-video";
 
 const SWEEP_ANIMATION = "ts2026-marquee-border-sweep";
 const SWEEP_HOVER_RATE = 0.35;
@@ -31,18 +41,41 @@ const CHROME_OUT = "data-ts2026-marquee-chrome-out";
 // prompt input fade out at `from` and fade back in at `until`, keyed by slide index: slide 3 hides them from 43s
 // to 53s.
 const CHROME_OUT_AT: Record<number, readonly [number, number]> = { 3: [43, 53] };
-// Set while the prompt input is faded out together with the chrome; it also comes back if the video ends first.
+// Set while the prompt input is faded out together with the chrome or its sidebar rail; it also comes back if
+// the video ends first.
 const INPUT_OUT = "data-ts2026-marquee-input-out";
 // Set once the chrome has come back at `until`, so it fades in rather than snapping back.
 const CHROME_BACK = "data-ts2026-marquee-chrome-back";
 // After a slide that hid the input, the CTA unfolds once the video ends and at least this long after the input
 // came back.
 const CTA_AFTER_INPUT_MS = 2000;
+// Set while the chrome's sidebar rail is faded off the video on screen; the menu bar stays. The prompt input
+// fades out with it and comes back when the video ends.
+const SIDE_OUT = "data-ts2026-marquee-side-out";
+// Seconds into a video from which the sidebar rail stays hidden until another video cuts in, keyed by slide
+// index, then by part (0 is the slide's own video, n its nth follow-up): slide 2's video hides it at 7s.
+const SIDE_OUT_AT: Record<number, Record<number, number>> = { 2: { 0: 7 } };
+// While the sidebar rail is off, the prompt input comes back this many seconds before the video ends.
+const INPUT_BACK_BEFORE_END_S = 3;
 // How long the chrome takes to fade; it starts early enough to be gone at the cut.
 const CHROME_FADE_S = 0.25;
 // How long the hint takes to fade out (its CSS hides it 0.3s after data-hint goes); the first screen's prompts
 // wait this long before they unfold, so the two never overlap.
 const HINT_OUT_MS = 300;
+// Between a slide's parts a drawn cursor takes over from the one in the video: it shows where the video's cursor
+// was last seen, glides to the input's plus and clicks it, and the next part cuts in on that click.
+// [x, y] of the video cursor's last position, as shares of the video frame, keyed by slide index.
+const CURSOR_FROM: Record<number, readonly [number, number]> = { 1: [0.201, 0.742] };
+const CURSOR_FROM_DEFAULT: readonly [number, number] = [0.22, 0.82];
+const CURSOR_MOVE_MS = 550;
+// The cursor rests on the plus at least this long before it presses; it holds there longer only while the next
+// part has no frame yet, so the click and the cut always land together.
+const CURSOR_REST_MS = 120;
+// How long the press lasts; the next part cuts in when it lets go.
+const CURSOR_PRESS_MS = 160;
+const CURSOR_FADE_MS = 200;
+// Set on the card while the cursor presses the plus.
+const PRESSED = "data-ts2026-marquee-pressed";
 
 const PHONE_QUERY = "(max-width: 767px)";
 const TOUCH_QUERY = "(hover: none) and (pointer: coarse)";
@@ -136,7 +169,6 @@ type Ts2026MarqueeOptions = {
   pulseDelay?: number;
   pulseIntroDelay?: number;
   hintDelay?: number;
-  hintPhoneTimeout?: number;
   autoOpenDelay?: number;
   imageDuration?: number;
 };
@@ -146,6 +178,8 @@ type Ts2026MarqueeSlide = {
   title: string;
   kind: "image" | "video";
   media: HTMLImageElement | HTMLVideoElement;
+  // Follow-up videos, in play order (see SLIDE_PARTS).
+  parts: HTMLVideoElement[];
 };
 
 const DEFAULTS: Required<Ts2026MarqueeOptions> = {
@@ -171,8 +205,6 @@ const DEFAULTS: Required<Ts2026MarqueeOptions> = {
   pulseDelay: 400,
   pulseIntroDelay: 1000,
   hintDelay: 1000,
-  // Phones only: the "Tap to explore…" hint hides this long after it shows.
-  hintPhoneTimeout: 15000,
   // The first screen opens its prompts by itself this long after load; 0 turns it off.
   autoOpenDelay: 4000,
   imageDuration: 6000,
@@ -188,6 +220,9 @@ const ARROW_RIGHT_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="n
 
 const PLUS_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M8 2.5v11M2.5 8h11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
 
+// The macOS arrow the videos are recorded with; its tip is the box's top-left corner.
+const CURSOR_SVG = `<svg viewBox="0 0 22 33" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M1.5 1.5v25.2l6.1-5.6 4.6 10.3 4.3-1.9-4.5-10.1h8.3L1.5 1.5Z" fill="#000" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>`;
+
 const ARROW_UP_SVG = `<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"><path d="M8 13V3.25M3.75 7.25 8 3l4.25 4.25" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 function el<K extends keyof HTMLElementTagNameMap>(
@@ -201,15 +236,28 @@ function el<K extends keyof HTMLElementTagNameMap>(
   return node;
 }
 
+function readVideo(section: HTMLElement): HTMLVideoElement | null {
+  const host = section.querySelector<HTMLElement>(".video__wrapper, .image__wrapper") ?? section;
+  // Test: phones play the desktop videos too.
+  return host.querySelector<HTMLVideoElement>(".desktop-only video") ?? host.querySelector<HTMLVideoElement>("video");
+}
+
+function partVideo(src: string): HTMLVideoElement {
+  const video = document.createElement("video");
+  const source = document.createElement("source");
+  source.src = src;
+  source.type = "video/mp4";
+  video.append(source);
+  return video;
+}
+
 function readSlide(section: HTMLElement, index: number): Ts2026MarqueeSlide | null {
   const title = section.querySelector(".display_caption")?.textContent?.replace(/\s+/g, " ").trim() ?? "";
   const host = section.querySelector<HTMLElement>(".video__wrapper, .image__wrapper") ?? section;
-  // Test: phones play the desktop videos too.
-  const video =
-    host.querySelector<HTMLVideoElement>(".desktop-only video") ?? host.querySelector<HTMLVideoElement>("video");
-  if (video) return { index, title, kind: "video", media: video };
+  const video = readVideo(section);
+  if (video) return { index, title, kind: "video", media: video, parts: (SLIDE_PARTS[index] ?? []).map(partVideo) };
   const img = host.querySelector<HTMLImageElement>("img");
-  if (img) return { index, title, kind: "image", media: img };
+  if (img) return { index, title, kind: "image", media: img, parts: [] };
   return null;
 }
 
@@ -240,11 +288,11 @@ function collectSlides(root: HTMLElement): Ts2026MarqueeSlide[] {
   return slides.sort((a, b) => a.index - b.index);
 }
 
-function cloneMedia(slide: Ts2026MarqueeSlide): HTMLImageElement | HTMLVideoElement {
-  const clone = slide.media.cloneNode(true) as HTMLImageElement | HTMLVideoElement;
+function cloneMedia<T extends HTMLImageElement | HTMLVideoElement>(media: T, index: number): T {
+  const clone = media.cloneNode(true) as T;
   clone.classList.add(`${PREFIX}__media`);
   clone.removeAttribute("id");
-  clone.dataset.ts2026MarqueeSlide = String(slide.index);
+  clone.dataset.ts2026MarqueeSlide = String(index);
   if (clone instanceof HTMLVideoElement) {
     // The poster is the hero still, framed differently from the video, so it would flash before playback on
     // every cut. It is kept aside and only put on when the first frame is late (see showPoster).
@@ -523,16 +571,116 @@ function mountBlobs(): (() => void) | null {
   };
 }
 
+type VidyardPlayer = {
+  uuid?: string;
+  play?: () => void;
+  pause?: () => void;
+  ready?: () => boolean;
+  on?: (event: string, handler: () => void) => void;
+};
+type VidyardWindow = { VidyardV4?: { api?: { renderDOMPlayers?: () => void }; players?: VidyardPlayer[] } };
+
+// Wider screens hide the mobile video, so it must not keep playing there. A phone turned to landscape counts as
+// wider too, so a video that is playing full screen is left alone.
+function pauseMobileVideo() {
+  const uuid = document.querySelector<HTMLElement>(`.${MOBILE_VIDEO} [data-uuid]`)?.dataset.uuid;
+  if (!uuid || document.fullscreenElement?.closest(`.${MOBILE_VIDEO}`)) return;
+  for (const player of (window as VidyardWindow).VidyardV4?.players ?? []) {
+    if (player.uuid === uuid) player.pause?.();
+  }
+}
+
+// The mobile blade's video. The CMS marks it up as <pbc-vidyard-player video-uuid="…">, which stays empty unless
+// the site's own player script picks it up, so it is rebuilt as Vidyard's native inline embed: a poster image
+// that Vidyard's embed script turns into the player. It goes into the hero, where the marquee's window sits on
+// wider screens, so the hero's blue background runs down to the video's bottom edge; the blade it came from
+// stays hidden. Runs once; later calls find nothing left to move.
+function mountMobileVideo() {
+  const host = document.querySelector<HTMLElement>(`#${MOBILE_ID} [video-uuid]`);
+  const uuid = host?.getAttribute("video-uuid");
+  const stage = document.querySelector<HTMLElement>(`#${TS2026_MARQUEE_HERO_ID} .image__wrapper`);
+  if (!host || !uuid || !stage) return;
+  const poster = document.createElement("img");
+  poster.className = "vidyard-player-embed";
+  poster.src = `https://play.vidyard.com/${encodeURIComponent(uuid)}.jpg`;
+  poster.alt = "";
+  poster.dataset.uuid = uuid;
+  poster.dataset.v = "4";
+  poster.dataset.type = "inline";
+  poster.style.cssText = "width: 100%; margin: auto; display: block;";
+  // The embed script hides the image and puts the player next to it, so the rounded corners go on a wrapper;
+  // the same still behind it covers the moment the player takes to load.
+  const screen = el("div", "video__asset");
+  screen.style.background = `url("${poster.src}") center / cover no-repeat`;
+  screen.append(poster);
+  // The translucent frame the marquee's window has, around the video.
+  const frame = el("div", MOBILE_VIDEO);
+  frame.append(screen);
+  stage.after(frame);
+  // A tap on the player belongs to Vidyard's iframe and never shows up on this page. Browser device emulators
+  // that show the phone zoomed out hand it to this page instead, as a click on the iframe element, and the
+  // player never hears of it: Play looks dead there. Such a click is passed on as play/pause.
+  let playing = false;
+  let watched: VidyardPlayer | undefined;
+  let queued = false;
+  frame.addEventListener("click", (event) => {
+    if (!(event.target instanceof HTMLIFrameElement)) return;
+    const player = (window as VidyardWindow).VidyardV4?.players?.find((item) => item.uuid === uuid);
+    if (!player) return;
+    if (watched !== player) {
+      watched = player;
+      player.on?.("play", () => (playing = true));
+      player.on?.("pause", () => (playing = false));
+    }
+    // A tap before Play shows up reaches a player that is still loading, which refuses play/pause with a console
+    // error. That tap starts the video once the player is ready instead.
+    if (player.ready && !player.ready()) {
+      if (!queued) {
+        queued = true;
+        player.on?.("ready", () => {
+          queued = false;
+          player.play?.();
+        });
+      }
+      return;
+    }
+    if (playing) player.pause?.();
+    else player.play?.();
+  });
+  host.remove();
+  // An embed script that is already up only renders images added later when asked to; one still loading, or
+  // added here, picks the image up by itself.
+  const vidyard = (window as VidyardWindow).VidyardV4;
+  if (vidyard?.api?.renderDOMPlayers) {
+    vidyard.api.renderDOMPlayers();
+  } else if (!document.querySelector(`script[src="${VIDYARD_EMBED_SRC}"]`)) {
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = VIDYARD_EMBED_SRC;
+    document.head.append(script);
+  }
+}
+
 function initTs2026Marquee(userOptions: Ts2026MarqueeOptions = {}): (() => void) | null {
   const unmountBlobs = mountBlobs();
+  if (!document.getElementById(TS2026_MARQUEE_ROOT_ID)) return unmountBlobs;
+  // Phones show the CMS's own mobile video blade in place of the marquee's window, so the marquee does not run
+  // there at all: no video clones, no prompt card, no cursor. Only that blade's video is set up.
   const phone = window.matchMedia?.(PHONE_QUERY);
-  let teardown = mount(userOptions, phone?.matches ?? false);
-  const onChange = (event: MediaQueryListEvent) => {
-    teardown?.();
-    teardown = mount(userOptions, event.matches);
+  const start = () => {
+    if (!phone?.matches) {
+      pauseMobileVideo();
+      return mount(userOptions);
+    }
+    mountMobileVideo();
+    return null;
   };
-  if (teardown) phone?.addEventListener("change", onChange);
-  if (!teardown && !unmountBlobs) return null;
+  let teardown = start();
+  const onChange = () => {
+    teardown?.();
+    teardown = start();
+  };
+  phone?.addEventListener("change", onChange);
   return () => {
     phone?.removeEventListener("change", onChange);
     teardown?.();
@@ -540,7 +688,7 @@ function initTs2026Marquee(userOptions: Ts2026MarqueeOptions = {}): (() => void)
   };
 }
 
-function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) | null {
+function mount(userOptions: Ts2026MarqueeOptions): (() => void) | null {
   const options = { ...DEFAULTS, ...userOptions };
   if (window.matchMedia?.(TOUCH_QUERY).matches) {
     options.hint = userOptions.hint ?? options.hintTouch;
@@ -561,10 +709,19 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   heroMedia?.setAttribute("data-ts2026-marquee-slide", "0");
 
   const clones = new Map<number, HTMLImageElement | HTMLVideoElement>();
+  // Each slide's follow-up videos; they play once, after the slide's own video.
+  const partClones = new Map<number, HTMLVideoElement[]>();
   for (const slide of slides) {
-    const clone = cloneMedia(slide);
+    const clone = cloneMedia(slide.media, slide.index);
     clones.set(slide.index, clone);
     stage.append(clone);
+    const parts = slide.parts.map((video) => {
+      const part = cloneMedia(video, slide.index);
+      part.loop = false;
+      stage.append(part);
+      return part;
+    });
+    if (parts.length) partClones.set(slide.index, parts);
   }
 
   // The window chrome laid over every slide, so the menu bar and sidebar stay crisp and identical across the
@@ -582,12 +739,16 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   let hintSeen = false;
   let pulseTimer = 0;
   let hintTimer = 0;
-  let hintExpired = false;
-  let hintExpireTimer = 0;
   let openHint = false;
   let openHintTimer = 0;
   let openTimer = 0;
   let active = 0;
+  // Which video of the active slide is on: 0 is its own, n its nth follow-up.
+  let part = 0;
+  // True while the drawn cursor travels to the plus between two parts.
+  let handoff = false;
+  const mediaOf = (index: number) =>
+    (index === active && part > 0 ? partClones.get(index)?.[part - 1] : undefined) ?? clones.get(index);
   let playHeld = false;
   // False while a finished slide that hid the input waits CTA_AFTER_INPUT_MS before its CTA unfolds.
   let ctaDue = true;
@@ -599,20 +760,8 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     const docked = Boolean(card.dataset.dock);
     const held = docked && (expanded || (mediaDone && ctaDue));
     const cued = !hintSeen && !expanded && (!docked || mediaDone);
-    const cueHint = cued && hintDue && !hintExpired;
-    const hinted = cueHint || openHint;
-    // Phones: the cue hint hides hintPhoneTimeout after it shows, until the cue is armed again.
-    if (phone && cueHint && !hintExpireTimer) {
-      hintExpireTimer = window.setTimeout(() => {
-        hintExpireTimer = 0;
-        hintExpired = true;
-        sync();
-      }, options.hintPhoneTimeout);
-    } else if (!cueHint && hintExpireTimer) {
-      window.clearTimeout(hintExpireTimer);
-      hintExpireTimer = 0;
-    }
-    const current = clones.get(active);
+    const hinted = (cued && hintDue) || openHint;
+    const current = mediaOf(active);
     card.toggleAttribute("data-teaser", held);
     card.toggleAttribute("data-playing", Boolean(current) && !held && !playHeld && !mediaDone);
     card.toggleAttribute("data-hint", hinted);
@@ -647,7 +796,8 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     root.toggleAttribute(SOFT, soft);
     if (current instanceof HTMLVideoElement) {
       // A finished docked slide rests on its last frame, also while its CTA waits to unfold.
-      if (held || playHeld || document.hidden || (docked && mediaDone)) current.pause();
+      // Between two parts the finished one rests on its last frame too; play() would restart it.
+      if (held || playHeld || handoff || document.hidden || (docked && mediaDone)) current.pause();
       else playVideo(current);
     }
   };
@@ -703,10 +853,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   const disarmCue = () => {
     window.clearTimeout(pulseTimer);
     window.clearTimeout(hintTimer);
-    window.clearTimeout(hintExpireTimer);
-    hintExpireTimer = 0;
     hintDue = false;
-    hintExpired = false;
   };
   const armCue = (delay: number) => {
     disarmCue();
@@ -719,6 +866,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   };
   if (options.expanded) setExpanded(true);
   stage.append(card);
+  const cursor = el("div", `${PREFIX}__cursor`, CURSOR_SVG);
+  cursor.setAttribute("aria-hidden", "true");
+  stage.append(cursor);
   // A 1px, all but invisible pulse that runs while a slide plays (see its CSS): on 120Hz screens Chromium hands a
   // video that is the only thing moving to the screen unevenly, every 3rd and 5th refresh instead of every 4th,
   // and its smooth stretches (slide 3's last seconds) judder as if they paused. Any running compositor animation
@@ -837,7 +987,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     syncChrome();
     // A slide that hid the input unfolds its CTA (and the cue) CTA_AFTER_INPUT_MS after the input came back.
     const wait =
-      card.dataset.dock && CHROME_OUT_AT[active] !== undefined && inputBackAt
+      card.dataset.dock && inputBackAt
         ? CTA_AFTER_INPUT_MS - (performance.now() - inputBackAt)
         : 0;
     if (wait > 0) {
@@ -852,6 +1002,12 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
       armCue(options.pulseDelay);
     }
     sync();
+  };
+  // A docked slide with a follow-up video hands over to it; anything else is done.
+  const onPartDone = () => {
+    const next = partClones.get(active)?.[part];
+    if (next && card.dataset.dock) startHandoff(next);
+    else onMediaDone();
   };
   const watchMedia = (media: HTMLImageElement | HTMLVideoElement | undefined) => {
     unwatchMedia?.();
@@ -868,10 +1024,13 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
         if (media.currentTime + 0.5 < last) onMediaDone();
         last = media.currentTime;
       };
-      media.addEventListener("ended", onMediaDone);
+      // Load the part that follows while this one plays, so it is ready by the cursor's click.
+      const after = card.dataset.dock ? partClones.get(active)?.[part] : undefined;
+      if (after && after !== media) primeVideo(after);
+      media.addEventListener("ended", onPartDone);
       media.addEventListener("timeupdate", onTimeUpdate);
       unwatchMedia = () => {
-        media.removeEventListener("ended", onMediaDone);
+        media.removeEventListener("ended", onPartDone);
         media.removeEventListener("timeupdate", onTimeUpdate);
         media.loop = loop;
       };
@@ -885,6 +1044,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   // that video reaches its full-bleed cut and fades back in at the window's end; it snaps back when the video
   // wraps, rewinds or another slide cuts in.
   let shown = -1;
+  // The video on screen and which part of its slide it is, for SIDE_OUT_AT.
+  let shownMedia: HTMLImageElement | HTMLVideoElement | undefined;
+  let shownPart = 0;
   let unwatchChrome: (() => void) | null = null;
   // When the input last came back after a slide hid it; 0 while it has not.
   let inputBackAt = 0;
@@ -895,9 +1057,19 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     const out = span !== undefined && t >= span[0] - CHROME_FADE_S && t < span[1];
     root.toggleAttribute(CHROME_OUT, out);
     root.toggleAttribute(CHROME_BACK, span !== undefined && t >= span[1]);
-    // The input fades out with the chrome and returns with it, or once the video has played to its end.
-    const ended = (shown === active && mediaDone) || (current instanceof HTMLVideoElement && current.ended);
-    const inputOut = out && !ended;
+    const sideAt = SIDE_OUT_AT[shown]?.[shownPart];
+    const sideT = shownMedia instanceof HTMLVideoElement ? shownMedia.currentTime : -1;
+    const sideOut = sideAt !== undefined && sideT >= sideAt - CHROME_FADE_S;
+    root.toggleAttribute(SIDE_OUT, sideOut);
+    // The input fades out with the chrome or the sidebar rail; it returns with the chrome, or INPUT_BACK_BEFORE_END_S
+    // before the video ends (the rail stays off).
+    const duration = shownMedia instanceof HTMLVideoElement ? shownMedia.duration : NaN;
+    const sideBack = Number.isFinite(duration) && sideT >= duration - INPUT_BACK_BEFORE_END_S;
+    const ended =
+      (shown === active && mediaDone) ||
+      (current instanceof HTMLVideoElement && current.ended) ||
+      (shownMedia instanceof HTMLVideoElement && shownMedia.ended);
+    const inputOut = (out || (sideOut && !sideBack)) && !ended;
     if (root.hasAttribute(INPUT_OUT) && !inputOut) inputBackAt = performance.now();
     root.toggleAttribute(INPUT_OUT, inputOut);
   };
@@ -905,8 +1077,11 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     unwatchChrome?.();
     unwatchChrome = null;
     shown = index;
+    shownMedia = video;
+    shownPart = index === active ? part : 0;
     syncChrome();
-    if (!(video instanceof HTMLVideoElement) || CHROME_OUT_AT[index] === undefined) return;
+    if (!(video instanceof HTMLVideoElement)) return;
+    if (CHROME_OUT_AT[index] === undefined && SIDE_OUT_AT[index]?.[shownPart] === undefined) return;
     let handle = 0;
     const perFrame = typeof video.requestVideoFrameCallback === "function";
     const onFrame = () => {
@@ -922,7 +1097,9 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   };
 
   const select = (index: number) => {
+    cancelHandoff();
     active = index;
+    part = 0;
     mediaDone = false;
     window.clearTimeout(ctaTimer);
     ctaDue = true;
@@ -940,9 +1117,10 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     sync();
   };
 
-  const slideMedia: [number, HTMLImageElement | HTMLVideoElement][] = [
-    ...(heroMedia ? [[0, heroMedia] as [number, HTMLImageElement | HTMLVideoElement]] : []),
-    ...clones,
+  const allMedia: (HTMLImageElement | HTMLVideoElement)[] = [
+    ...(heroMedia ? [heroMedia] : []),
+    ...clones.values(),
+    ...[...partClones.values()].flat(),
   ];
   let finishSwap: (() => void) | null = null;
 
@@ -950,12 +1128,8 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
   // until the incoming has a frame on screen, so the window never shows an empty or half-faded box.
   const reveal = (index: number) => {
     finishSwap?.();
-    let incoming: HTMLImageElement | HTMLVideoElement | undefined;
-    const leaving: (HTMLImageElement | HTMLVideoElement)[] = [];
-    for (const [slideIndex, media] of slideMedia) {
-      if (slideIndex === index) incoming = media;
-      else if (media.hasAttribute(ACTIVE)) leaving.push(media);
-    }
+    const incoming = index === 0 && !clones.has(0) ? (heroMedia ?? undefined) : mediaOf(index);
+    const leaving = allMedia.filter((media) => media !== incoming && media.hasAttribute(ACTIVE));
     incoming?.setAttribute(ACTIVE, "");
     root.dataset.ts2026MarqueeActive = String(index);
     watchChrome(index, incoming);
@@ -983,8 +1157,81 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
 
   const release = () => {
     playHeld = false;
-    watchMedia(clones.get(active));
+    watchMedia(mediaOf(active));
     sync();
+  };
+
+  // Between two parts of a slide: the cursor picks up where the video's cursor left off, glides to the input's
+  // plus and presses it; the next part cuts in as the press lets go, and the cursor fades out over it.
+  let handoffTimer = 0;
+  let cursorMove: Animation | null = null;
+  const hideCursor = () => {
+    window.clearTimeout(handoffTimer);
+    cursorMove?.cancel();
+    cursorMove = null;
+    cursor.removeAttribute("data-on");
+    cursor.removeAttribute(PRESSED);
+    card.removeAttribute(PRESSED);
+  };
+  const cancelHandoff = () => {
+    if (!handoff) return;
+    handoff = false;
+    hideCursor();
+  };
+  const startHandoff = (next: HTMLVideoElement) => {
+    const from = mediaOf(active);
+    unwatchMedia?.();
+    unwatchMedia = null;
+    handoff = true;
+    primeVideo(next);
+    sync();
+
+    const play = () => {
+      if (!handoff) return;
+      whenFrameReady(next, () => {
+        if (!handoff) return;
+        handoff = false;
+        part += 1;
+        cursor.removeAttribute(PRESSED);
+        card.removeAttribute(PRESSED);
+        watchMedia(next);
+        reveal(active);
+        sync();
+        handoffTimer = window.setTimeout(hideCursor, CURSOR_FADE_MS);
+        cursor.removeAttribute("data-on");
+      });
+    };
+    const press = () => {
+      if (!handoff) return;
+      card.setAttribute(PRESSED, "");
+      handoffTimer = window.setTimeout(play, CURSOR_PRESS_MS);
+    };
+
+    const plus = composer.querySelector<HTMLElement>(`.${PREFIX}__plus`);
+    const frame = from?.getBoundingClientRect();
+    const target = plus?.getBoundingClientRect();
+    if (!frame || !target || !frame.width || !target.width || reducedMotion()) {
+      play();
+      return;
+    }
+    const origin = stage.getBoundingClientRect();
+    const [fx, fy] = CURSOR_FROM[active] ?? CURSOR_FROM_DEFAULT;
+    // The video fills its box's width; its height follows from its own aspect ratio.
+    const ratio = from instanceof HTMLVideoElement && from.videoWidth ? from.videoHeight / from.videoWidth : 0;
+    const frameHeight = ratio ? frame.width * ratio : frame.height;
+    const at = (x: number, y: number) => `${num(x - origin.left)}px ${num(y - origin.top)}px`;
+    const start = at(frame.left + frame.width * fx, frame.top + frameHeight * fy);
+    const end = at(target.left + target.width / 2, target.top + target.height / 2);
+    cursor.style.translate = end;
+    cursor.setAttribute("data-on", "");
+    cursorMove = cursor.animate([{ translate: start }, { translate: end }], {
+      duration: CURSOR_MOVE_MS,
+      easing: "cubic-bezier(0.3, 0.6, 0.3, 1)",
+    });
+    // Press only once the next part has a frame, so the cut follows the click at once.
+    handoffTimer = window.setTimeout(() => {
+      if (handoff) whenFrameReady(next, press);
+    }, CURSOR_MOVE_MS + CURSOR_REST_MS);
   };
 
   const onClick = (event: Event) => {
@@ -1096,10 +1343,13 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     unwatchMedia?.();
     unwatchChrome?.();
     finishSwap?.();
-    for (const clone of clones.values()) {
+    cancelHandoff();
+    hideCursor();
+    for (const clone of [...clones.values(), ...[...partClones.values()].flat()]) {
       if (clone instanceof HTMLVideoElement) clone.pause();
       clone.remove();
     }
+    cursor.remove();
     card.remove();
     ticker.remove();
     chrome.remove();
@@ -1112,6 +1362,7 @@ function mount(userOptions: Ts2026MarqueeOptions, phone: boolean): (() => void) 
     root.removeAttribute(SOFT);
     root.removeAttribute(CUT);
     root.removeAttribute(CHROME_OUT);
+    root.removeAttribute(SIDE_OUT);
     root.removeAttribute(INPUT_OUT);
     root.removeAttribute(CHROME_BACK);
   };
