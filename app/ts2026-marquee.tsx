@@ -67,6 +67,16 @@ const HINT_OUT_MS = 300;
 // [x, y] of the video cursor's last position, as shares of the video frame, keyed by slide index.
 const CURSOR_FROM: Record<number, readonly [number, number]> = { 1: [0.201, 0.742] };
 const CURSOR_FROM_DEFAULT: readonly [number, number] = [0.22, 0.82];
+// Seconds into a slide's video at which its cursor is gone (the first frame without it), keyed by slide index.
+// The drawn cursor takes over right there and the video rests on that frame; without an entry it waits for the end.
+const CURSOR_AT_S: Record<number, number> = { 1: 11.25 };
+// How fast the video's cursor is moving when it vanishes, in frame widths per second. The drawn cursor sets off
+// at that speed and eases into the plus, so the motion runs on unbroken.
+const CURSOR_SPEED = 1.35;
+// CURSOR_EASING starts at this many times the move's average speed (its first control point's y / x).
+const CURSOR_EASING = "cubic-bezier(0.3, 0.6, 0.3, 1)";
+const CURSOR_EASING_START = 2;
+const CURSOR_MOVE_MIN_MS = 150;
 const CURSOR_MOVE_MS = 550;
 // The cursor rests on the plus at least this long before it presses; it holds there longer only while the next
 // part has no frame yet, so the click and the cut always land together.
@@ -1019,17 +1029,32 @@ function mount(userOptions: Ts2026MarqueeOptions): (() => void) | null {
       // last frame; looping would wrap to the first frame before the wrap is noticed and the video paused.
       const loop = media.loop;
       if (card.dataset.dock) media.loop = false;
-      let last = 0;
-      const onTimeUpdate = () => {
-        if (media.currentTime + 0.5 < last) onMediaDone();
-        last = media.currentTime;
-      };
       // Load the part that follows while this one plays, so it is ready by the cursor's click.
       const after = card.dataset.dock ? partClones.get(active)?.[part] : undefined;
       if (after && after !== media) primeVideo(after);
+      // The drawn cursor takes over on the first frame the video's own cursor is gone, not at the very end, so
+      // there is never a frame with no cursor at all. Frame callbacks catch that frame exactly; timeupdate, a few
+      // times a second, backs them up where they do not run.
+      const takeover = after && part === 0 ? CURSOR_AT_S[active] : undefined;
+      let last = 0;
+      const onTimeUpdate = () => {
+        if (media.currentTime + 0.5 < last) onMediaDone();
+        else if (takeover !== undefined && media.currentTime >= takeover) onPartDone();
+        last = media.currentTime;
+      };
+      let frameHandle = 0;
+      if (takeover !== undefined && typeof media.requestVideoFrameCallback === "function") {
+        const onFrame = (_now: number, frame: VideoFrameCallbackMetadata) => {
+          frameHandle = 0;
+          if (frame.mediaTime >= takeover) onPartDone();
+          else frameHandle = media.requestVideoFrameCallback(onFrame);
+        };
+        frameHandle = media.requestVideoFrameCallback(onFrame);
+      }
       media.addEventListener("ended", onPartDone);
       media.addEventListener("timeupdate", onTimeUpdate);
       unwatchMedia = () => {
+        if (frameHandle) media.cancelVideoFrameCallback(frameHandle);
         media.removeEventListener("ended", onPartDone);
         media.removeEventListener("timeupdate", onTimeUpdate);
         media.loop = loop;
@@ -1220,18 +1245,27 @@ function mount(userOptions: Ts2026MarqueeOptions): (() => void) | null {
     const ratio = from instanceof HTMLVideoElement && from.videoWidth ? from.videoHeight / from.videoWidth : 0;
     const frameHeight = ratio ? frame.width * ratio : frame.height;
     const at = (x: number, y: number) => `${num(x - origin.left)}px ${num(y - origin.top)}px`;
-    const start = at(frame.left + frame.width * fx, frame.top + frameHeight * fy);
-    const end = at(target.left + target.width / 2, target.top + target.height / 2);
+    const sx = frame.left + frame.width * fx;
+    const sy = frame.top + frameHeight * fy;
+    const ex = target.left + target.width / 2;
+    const ey = target.top + target.height / 2;
+    // Long enough that the move sets off at the video cursor's own speed.
+    const speed = (CURSOR_SPEED * frame.width) / 1000;
+    const move = Math.min(
+      CURSOR_MOVE_MS,
+      Math.max(CURSOR_MOVE_MIN_MS, (CURSOR_EASING_START * Math.hypot(ex - sx, ey - sy)) / speed),
+    );
+    const end = at(ex, ey);
     cursor.style.translate = end;
     cursor.setAttribute("data-on", "");
-    cursorMove = cursor.animate([{ translate: start }, { translate: end }], {
-      duration: CURSOR_MOVE_MS,
-      easing: "cubic-bezier(0.3, 0.6, 0.3, 1)",
+    cursorMove = cursor.animate([{ translate: at(sx, sy) }, { translate: end }], {
+      duration: move,
+      easing: CURSOR_EASING,
     });
     // Press only once the next part has a frame, so the cut follows the click at once.
     handoffTimer = window.setTimeout(() => {
       if (handoff) whenFrameReady(next, press);
-    }, CURSOR_MOVE_MS + CURSOR_REST_MS);
+    }, move + CURSOR_REST_MS);
   };
 
   const onClick = (event: Event) => {
